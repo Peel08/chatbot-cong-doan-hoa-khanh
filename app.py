@@ -1,31 +1,28 @@
-# Cho phép người dùng nhập tên để "nhận diện" lịch sử
-if "user_name" not in st.session_state:
-    with st.sidebar:
-        st.subheader("👤 Đăng nhập")
-        name = st.text_input("Nhập Họ tên của bạn để bắt đầu:", key="name_input")
-        if name:
-            st.session_state.user_name = name
-            st.rerun()
-    st.warning("Vui lòng nhập tên ở thanh bên trái để bắt đầu trò chuyện!")
-    st.stop()
-
-st.sidebar.success(f"Chào bạn, {st.session_state.user_name}!")
 import streamlit as st
 import google.generativeai as genai
 from gtts import gTTS
 import os
 import base64
 
-# 1. CẤU HÌNH GIAO DIỆN CHUẨN
+# 1. CẤU HÌNH GIAO DIỆN (Dòng này phải luôn ở ĐẦU TIÊN)
 st.set_page_config(page_title="Công đoàn Hòa Khánh AI", page_icon="🇻🇳", layout="wide")
 
-# CSS để đổi màu xanh Công đoàn và làm đẹp khung chat
+# 2. KIỂM TRA ĐĂNG NHẬP (Session State)
+if "user_name" not in st.session_state:
+    st.session_state.user_name = None
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# 3. CSS LÀM ĐẸP
 st.markdown("""
     <style>
     .main { background-color: #f0f5ff; }
     .stChatMessage { border-radius: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    h1 { color: #0056b3; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .sidebar .sidebar-content { background-image: linear-gradient(#0056b3, #007bff); color: white; }
+    h1 { color: #0056b3; font-family: 'Segoe UI', sans-serif; text-align: center; }
+    /* Màu nền thanh bên */
+    [data-testid="stSidebar"] { background-color: #0056b3; }
+    [data-testid="stSidebar"] * { color: white !important; }
     img {
         filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
         border-radius: 50%;
@@ -35,55 +32,68 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. THANH BÊN (SIDEBAR) CÓ LOGO
-with st.sidebar:
-    # Link logo Công đoàn Việt Nam
-    st.image("logo.png", width=150)
-    st.title("CÔNG ĐOÀN XÃ HÒA KHÁNH")
-    st.markdown("---")
-    st.write("📍 **Địa chỉ:** Hòa Khánh, Tây Ninh")
-    st.info("Trợ lý AI hỗ trợ giải đáp thủ tục và chính sách 24/7.")
-    if st.button("🗑️ Xóa lịch sử"):
-        st.session_state.messages = []
-        st.rerun()
-
-# 3. CẤU HÌNH AI
+# 4. CẤU HÌNH AI
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 model = genai.GenerativeModel("gemini-3-flash-preview")
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# 5. HÀM PHÁT ÂM THANH
+def speak(text):
+    try:
+        tts = gTTS(text=text, lang='vi')
+        tts.save("speech.mp3")
+        with open("speech.mp3", "rb") as f:
+            data = f.read()
+            b64 = base64.b64encode(data).decode()
+            md = f'<audio src="data:audio/mp3;base64,{b64}" controls autoplay style="width: 100%;"></audio>'
+            st.markdown(md, unsafe_allow_html=True)
+    except:
+        pass
 
-# 4. HIỂN THỊ CHAT
-st.markdown("<h1 style='text-align: center;'>🤖 TRỢ LÝ ẢO CÔNG ĐOÀN VIÊN</h1>", unsafe_allow_html=True)
+# 6. THANH BÊN (SIDEBAR)
+with st.sidebar:
+    # Hiển thị logo (Đảm bảo đã up file logo.png lên GitHub)
+    try:
+        st.image("logo.png", width=150)
+    except:
+        st.image("https://upload.wikimedia.org/wikipedia/vi/thumb/c/cb/Logo_Cong_doan_Viet_Nam.svg/1200px-Logo_Cong_doan_Viet_Nam.svg.png", width=150)
+    
+    st.title("CÔNG ĐOÀN HÒA KHÁNH")
+    st.write("---")
 
+    if not st.session_state.user_name:
+        st.subheader("👤 Đăng nhập")
+        name = st.text_input("Nhập Họ tên của bạn:", key="name_input")
+        if name:
+            st.session_state.user_name = name
+            st.rerun()
+        st.stop() # Dừng lại cho đến khi nhập tên
+    else:
+        st.success(f"Chào bạn: {st.session_state.user_name}")
+        st.write("📍 Hòa Khánh, Tây Ninh")
+        if st.button("🗑️ Xóa lịch sử"):
+            st.session_state.messages = []
+            st.rerun()
+
+# 7. GIAO DIỆN CHÍNH
+st.markdown("<h1>🤖 TRỢ LÝ ẢO CÔNG ĐOÀN VIÊN</h1>", unsafe_allow_html=True)
+
+# Hiển thị lịch sử chat
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# 5. XỬ LÝ PHÁT ÂM THANH (TTS)
-def speak(text):
-    tts = gTTS(text=text, lang='vi')
-    tts.save("speech.mp3")
-    with open("speech.mp3", "rb") as f:
-        data = f.read()
-        b64 = base64.b64encode(data).decode()
-        md = f'<audio controls autoplay><source src="data:audio/mp3;base64,{b64}" type="audio/mp3"></audio>'
-        st.markdown(md, unsafe_allow_html=True)
-
-# 6. NHẬP CÂU HỎI
-if prompt := st.chat_input("Mời bạn nhập câu hỏi..."):
+# 8. NHẬP CÂU HỎI
+if prompt := st.chat_input(f"Chào {st.session_state.user_name}, tôi có thể giúp gì cho bạn?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Đang tra cứu và soạn câu trả lời..."):
-            response = model.generate_content(prompt)
+        with st.spinner("Đang soạn câu trả lời..."):
+            # Gửi kèm tên để AI trả lời thân thiện hơn
+            response = model.generate_content(f"Người dùng tên là {st.session_state.user_name}. Hãy giải đáp thân thiện câu hỏi: {prompt}")
             full_response = response.text
             st.markdown(full_response)
-            
-            # Tự động phát giọng nói câu trả lời
             speak(full_response)
             
     st.session_state.messages.append({"role": "assistant", "content": full_response})
