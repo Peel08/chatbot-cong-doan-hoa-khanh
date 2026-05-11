@@ -1,3 +1,15 @@
+# Cho phép người dùng nhập tên để "nhận diện" lịch sử
+if "user_name" not in st.session_state:
+    with st.sidebar:
+        st.subheader("👤 Đăng nhập")
+        name = st.text_input("Nhập Họ tên của bạn để bắt đầu:", key="name_input")
+        if name:
+            st.session_state.user_name = name
+            st.rerun()
+    st.warning("Vui lòng nhập tên ở thanh bên trái để bắt đầu trò chuyện!")
+    st.stop()
+
+st.sidebar.success(f"Chào bạn, {st.session_state.user_name}!")
 import streamlit as st
 import google.generativeai as genai
 from gtts import gTTS
