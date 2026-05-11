@@ -46,7 +46,7 @@ if "GOOGLE_API_KEY" not in st.secrets:
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 # Thử dùng bản Flash, nếu lỗi 429 sẽ hiện thông báo nhẹ nhàng
-model = genai.GenerativeModel("gemini-3-flash-preview")
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
