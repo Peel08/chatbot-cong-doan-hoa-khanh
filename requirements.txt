@@ -1,3 +1,2 @@
 streamlit
-google-generativeai
-gTTS
+google-generativeai>=0.4.0
