@@ -28,7 +28,7 @@ if prompt := st.chat_input("Hỏi tôi bất cứ điều gì..."):
     
     try:
         # Dùng 'gemini-pro' là bản ổn định nhất, ít khi bị lỗi NotFound
-        model = genai.GenerativeModel("gemini-pro") 
+        model = genai.GenerativeModel("gemini-1.5-flash") 
         response = model.generate_content(prompt)
         
         with st.chat_message("assistant"):
