@@ -1,68 +1,71 @@
 import streamlit as st
 import google.generativeai as genai
-import json
+from gtts import gTTS
 import os
-from datetime import datetime
+import base64
 
-# 1. Cấu hình giao diện
-st.set_page_config(page_title="Công đoàn Hòa Khánh AI", page_icon="🇻🇳")
+# 1. CẤU HÌNH GIAO DIỆN CHUẨN
+st.set_page_config(page_title="Công đoàn Hòa Khánh AI", page_icon="🇻🇳", layout="wide")
 
-# 2. Quản lý File Lịch sử (Lưu vào thư mục hiện tại)
-HISTORY_FILE = "chat_history.json"
+# CSS để đổi màu xanh Công đoàn và làm đẹp khung chat
+st.markdown("""
+    <style>
+    .main { background-color: #f0f5ff; }
+    .stChatMessage { border-radius: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h1 { color: #0056b3; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .sidebar .sidebar-content { background-image: linear-gradient(#0056b3, #007bff); color: white; }
+    </style>
+""", unsafe_allow_html=True)
 
-def load_history():
-    if os.path.exists(HISTORY_FILE):
-        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
-
-def save_history(messages):
-    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(messages, f, ensure_ascii=False, indent=4)
-
-# 3. Khởi tạo dữ liệu
-if "messages" not in st.session_state:
-    st.session_state.messages = load_history()
-
-# 4. Cấu hình AI
-genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-model = genai.GenerativeModel(
-    model_name="gemini-3-flash-preview",
-    system_instruction="Bạn là Trợ lý ảo Công đoàn xã Hòa Khánh. Hãy trả lời lịch sự, chính xác."
-)
-
-# 5. Giao diện Sidebar (Thanh bên cạnh)
+# 2. THANH BÊN (SIDEBAR) CÓ LOGO
 with st.sidebar:
-    st.title("⚙️ Tùy chọn")
-    if st.button("🗑️ Xóa toàn bộ lịch sử"):
+    # Link logo Công đoàn Việt Nam
+    st.image("https://upload.wikimedia.org/wikipedia/vi/thumb/c/cb/Logo_Cong_doan_Viet_Nam.svg/1200px-Logo_Cong_doan_Viet_Nam.svg.png", width=150)
+    st.title("CÔNG ĐOÀN XÃ HÒA KHÁNH")
+    st.markdown("---")
+    st.write("📍 **Địa chỉ:** Hòa Khánh, Tây Ninh")
+    st.info("Trợ lý AI hỗ trợ giải đáp thủ tục và chính sách 24/7.")
+    if st.button("🗑️ Xóa lịch sử"):
         st.session_state.messages = []
-        if os.path.exists(HISTORY_FILE):
-            os.remove(HISTORY_FILE)
         st.rerun()
-    st.write("---")
-    st.info("Lịch sử trò chuyện được lưu tự động để bạn có thể xem lại sau.")
 
-# 6. Hiển thị lịch sử chat
-st.title("🇻🇳 TRỢ LÝ CÔNG ĐOÀN HÒA KHÁNH")
+# 3. CẤU HÌNH AI
+genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+model = genai.GenerativeModel("gemini-3-flash-preview")
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# 7. Xử lý câu hỏi mới
-if prompt := st.chat_input("Nhập câu hỏi tại đây..."):
-    # Hiển thị tin nhắn người dùng
+# 4. HIỂN THỊ CHAT
+st.markdown("<h1 style='text-align: center;'>🤖 TRỢ LÝ ẢO CÔNG ĐOÀN VIÊN</h1>", unsafe_allow_html=True)
+
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+# 5. XỬ LÝ PHÁT ÂM THANH (TTS)
+def speak(text):
+    tts = gTTS(text=text, lang='vi')
+    tts.save("speech.mp3")
+    with open("speech.mp3", "rb") as f:
+        data = f.read()
+        b64 = base64.b64encode(data).decode()
+        md = f'<audio controls autoplay><source src="data:audio/mp3;base64,{b64}" type="audio/mp3"></audio>'
+        st.markdown(md, unsafe_allow_html=True)
+
+# 6. NHẬP CÂU HỎI
+if prompt := st.chat_input("Mời bạn nhập câu hỏi..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # AI phản hồi
     with st.chat_message("assistant"):
-        with st.spinner("Đang tra cứu..."):
+        with st.spinner("Đang tra cứu và soạn câu trả lời..."):
             response = model.generate_content(prompt)
             full_response = response.text
             st.markdown(full_response)
             
-    # Lưu vào danh sách và file
+            # Tự động phát giọng nói câu trả lời
+            speak(full_response)
+            
     st.session_state.messages.append({"role": "assistant", "content": full_response})
-    save_history(st.session_state.messages)
