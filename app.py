@@ -69,7 +69,7 @@ if "user_name" not in st.session_state:
 with st.sidebar:
     # Hiển thị Logo
     logo_url = "https://upload.wikimedia.org/wikipedia/vi/thumb/c/cb/Logo_Cong_doan_Viet_Nam.svg/1200px-Logo_Cong_doan_Viet_Nam.svg.png"
-    st.image(logo_url, width=150)
+    st.image("logo.png", width=150)
     
     st.markdown("## CÔNG ĐOÀN HÒA KHÁNH")
     st.write("---")
