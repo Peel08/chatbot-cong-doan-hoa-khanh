@@ -24,7 +24,7 @@ if "model_name" not in st.session_state:
 if prompt := st.chat_input("Hỏi tôi bất cứ điều gì..."):
     st.chat_message("user").markdown(prompt)
     
-    model = genai.GenerativeModel(st.session_state.model_name)
+    model = genai.GenerativeModel("gemini-3-flash-preview")
     try:
         response = model.generate_content(prompt)
         st.chat_message("assistant").markdown(response.text)
