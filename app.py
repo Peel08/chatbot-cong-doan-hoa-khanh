@@ -16,6 +16,7 @@ genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 if prompt := st.chat_input("Hỏi tôi bất cứ điều gì..."):
     st.chat_message("user").markdown(prompt)
-model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
+    # Hai dòng dưới đây phải thụt vào chính xác 4 dấu cách (hoặc 1 phím Tab)
+    model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
     response = model.generate_content(prompt)
     st.chat_message("assistant").markdown(response.text)
