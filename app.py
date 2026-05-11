@@ -14,6 +14,12 @@ st.markdown("""
     .stChatMessage { border-radius: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     h1 { color: #0056b3; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     .sidebar .sidebar-content { background-image: linear-gradient(#0056b3, #007bff); color: white; }
+    img {
+        filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
+        border-radius: 50%;
+        background: white;
+        padding: 5px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
