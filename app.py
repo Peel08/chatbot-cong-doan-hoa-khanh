@@ -20,7 +20,7 @@ st.markdown("""
 # 2. THANH BÊN (SIDEBAR) CÓ LOGO
 with st.sidebar:
     # Link logo Công đoàn Việt Nam
-    st.image(logo.png)
+    st.image("logo.png", width=150)
     st.title("CÔNG ĐOÀN XÃ HÒA KHÁNH")
     st.markdown("---")
     st.write("📍 **Địa chỉ:** Hòa Khánh, Tây Ninh")
