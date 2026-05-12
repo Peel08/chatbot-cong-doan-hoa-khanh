@@ -9,7 +9,7 @@ import time
 # --- 1. CẤU HÌNH TRANG ---
 st.set_page_config(page_title="Công đoàn Hòa Khánh AI", page_icon="🇻🇳", layout="wide")
 
-# --- 2. HÀM TỰ ĐỘNG ĐỌC DỮ LIỆU TỪ THƯ MỤC DATA ---
+# --- 2. HÀM ĐỌC DỮ LIỆU TỪ THƯ MỤC DATA ---
 @st.cache_resource
 def load_internal_data():
     combined_text = ""
@@ -29,7 +29,7 @@ def load_internal_data():
             except: pass
     return combined_text
 
-# --- 3. CSS CHUẨN MOBILE & HIỆN THỊ TÁC GIẢ ---
+# --- 3. CSS CHUẨN MOBILE (CĂN GIỮA, XANH ĐẬM) ---
 st.markdown("""
     <style>
     .main { background-color: #ffffff; }
@@ -57,12 +57,8 @@ st.markdown("""
         height: 45px;
     }
     
-    /* Tên tác giả trong Sidebar */
-    .author-sidebar { color: rgba(255, 255, 255, 0.8); text-align: center; font-size: 0.85rem; margin-top: 40px; padding-bottom: 20px; }
-    
-    /* Tên tác giả dưới cùng trang chính */
+    .author-info { color: rgba(255, 255, 255, 0.7); text-align: center; font-size: 0.8rem; margin-top: 40px; }
     .author-footer { text-align: center; color: #7f8c8d; font-size: 0.8rem; margin-top: 50px; padding: 20px; border-top: 1px solid #eee; }
-    
     input { color: #000000 !important; }
     </style>
 """, unsafe_allow_html=True)
@@ -70,7 +66,8 @@ st.markdown("""
 # --- 4. KẾT NỐI AI ---
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    model = genai.GenerativeModel("gemini-1.5-flash-8b")
+    # Sử dụng bản 1.5 Flash để ổn định nhất cho tài khoản Free
+    model = genai.GenerativeModel("gemini-1.5-flash")
 else:
     st.error("Thiếu API Key trong Secrets!")
     st.stop()
@@ -94,10 +91,9 @@ with st.sidebar:
         if st.button("🗑️ XÓA HỘI THOẠI"):
             st.session_state.messages = []; st.rerun()
             
-        # TÁC GIẢ XUẤT HIỆN TẠI ĐÂY (SIDEBAR)
-        st.markdown(f"<p class='author-sidebar'>Thiết kế bởi:<br><b>Lương Tấn Phát</b></p>", unsafe_allow_html=True)
+        st.markdown(f"<p class='author-info'>Thiết kế bởi:<br><b>Lương Tấn Phát</b></p>", unsafe_allow_html=True)
 
-# --- 7. GIAO DIỆN CHAT CHÍNH (FIX LỖI 429 & TÁC GIẢ FOOTER) ---
+# --- 7. GIAO DIỆN CHAT VỚI HIỆU ỨNG TIẾN TRÌNH ---
 st.markdown("<h2 style='text-align: center; color: #004494;'>TRỢ LÝ ẢO CÔNG ĐOÀN</h2>", unsafe_allow_html=True)
 
 if "messages" not in st.session_state: st.session_state.messages = []
@@ -111,30 +107,38 @@ if prompt := st.chat_input("Hỏi tôi về chính sách..."):
 
     with st.chat_message("assistant"):
         status_placeholder = st.empty()
-        with st.spinner("Đang tra cứu..."):
-            context = f"Dữ liệu nội bộ: {internal_knowledge[:10000]}\n" if internal_knowledge else ""
-            full_prompt = f"{context}Trả lời thân thiện cho {st.session_state.user_name}: {prompt}"
-            
-            success = False
-            retries = 0
-            while not success and retries < 5:
-                try:
-                    response = model.generate_content(full_prompt)
-                    ans = response.text
-                    status_placeholder.markdown(ans)
-                    st.session_state.messages.append({"role": "assistant", "content": ans})
-                    success = True
-                except Exception as e:
-                    if "429" in str(e):
-                        retries += 1
-                        for i in range(10, 0, -1):
-                            status_placeholder.warning(f"⚠️ Google đang bận. Đang tự động thử lại sau {i} giây...")
-                            time.sleep(1)
-                    else:
-                        status_placeholder.error("Lỗi kết nối. Vui lòng thử lại sau.")
-                        break
+        progress_bar = st.progress(0)
+        
+        # Hiệu ứng chạy thanh tiến trình để người xem chờ đợi thoải mái hơn
+        for i in range(100):
+            time.sleep(0.01)
+            progress_bar.progress(i + 1)
+            status_placeholder.info(f"🤖 Đang trích xuất dữ liệu nội bộ... {i+1}%")
 
-# TÁC GIẢ XUẤT HIỆN TẠI ĐÂY (CHÂN TRANG CHÍNH)
+        context = f"Dữ liệu nội bộ: {internal_knowledge[:10000]}\n" if internal_knowledge else ""
+        full_prompt = f"{context}Trả lời thân thiện cho {st.session_state.user_name}: {prompt}"
+        
+        success = False
+        retries = 0
+        while not success and retries < 3:
+            try:
+                response = model.generate_content(full_prompt)
+                ans = response.text
+                status_placeholder.empty()
+                progress_bar.empty()
+                st.markdown(ans)
+                st.session_state.messages.append({"role": "assistant", "content": ans})
+                success = True
+            except Exception as e:
+                retries += 1
+                if retries < 3:
+                    for i in range(5, 0, -1):
+                        status_placeholder.warning(f"⚡ Đang tối ưu hóa câu trả lời, vui lòng đợi {i} giây...")
+                        time.sleep(1)
+                else:
+                    status_placeholder.error("Lỗi kết nối. Phát hãy thử nhấn gửi lại nhé!")
+
+# --- 8. FOOTER ---
 st.markdown(f"""
     <div class="author-footer">
         Được xây dựng và phát triển bởi <b>Lương Tấn Phát</b><br>
