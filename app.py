@@ -6,7 +6,7 @@ import io
 import os
 
 # --- 1. CẤU HÌNH TRANG ---
-st.set_page_config(page_title="Công đoàn Hòa Khánh", page_icon="logo_cong_doan.png", layout="wide")
+st.set_page_config(page_title="Công đoàn Hòa Khánh", page_icon="logo.png", layout="wide")
 
 # --- 2. HÀM ĐỌC DỮ LIỆU NỘI BỘ (CHẠY NGẦM) ---
 @st.cache_resource
