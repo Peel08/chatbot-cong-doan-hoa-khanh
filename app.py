@@ -70,7 +70,7 @@ st.markdown("""
 # --- 4. KẾT NỐI AI ---
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    model = genai.GenerativeModel("gemini-3-flash-preview")
+    model = genai.GenerativeModel("gemini-1.5-flash-8b")
 else:
     st.error("Thiếu API Key trong Secrets!")
     st.stop()
