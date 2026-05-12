@@ -6,69 +6,74 @@ import os
 # 1. Cấu hình trang
 st.set_page_config(page_title="Hòa Khánh Digital AI", page_icon="robot.png", layout="wide")
 
-# 2. CSS "SIÊU CĂN TÂM" - Đảm bảo cân đối trên mọi màn hình
+# 2. CSS "VÀNG" - ÉP TÂM TUYỆT ĐỐI
 st.markdown('''
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
-    /* Nền sáng công nghệ */
-    .stApp { background: linear-gradient(135deg, #f5f7fa 0%, #d6e4f0 100%); }
+    /* Nền gradient hiện đại */
+    .stApp { background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%); }
 
-    /* Ép toàn bộ khối đăng nhập ra giữa màn hình */
-    .main-login-container {
+    /* Cấu trúc ép mọi thứ vào giữa màn hình */
+    .st-emotion-cache-1jicfl2 { width: 100% !important; padding: 0 !important; }
+    
+    .main-wrapper {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        text-align: center;
+        min-height: 80vh;
         width: 100%;
-        padding-top: 50px;
     }
 
-    /* Thẻ Card trắng chứa nội dung */
+    /* Thẻ Card đăng nhập xịn */
     .login-card {
         background: #ffffff;
-        padding: 40px;
-        border-radius: 25px;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.08);
-        text-align: center;
-        width: 100%;
+        padding: 45px;
+        border-radius: 30px;
+        box-shadow: 0 20px 50px rgba(0, 68, 148, 0.15);
+        border: 1px solid #ffffff;
         max-width: 500px;
-        border: 1px solid #e1e8ed;
+        width: 90%;
+        margin: 0 auto;
     }
 
-    /* Hiệu ứng Robot bay căn giữa */
-    .robot-box {
-        margin-bottom: 25px;
-        animation: float 3.5s ease-in-out infinite;
+    /* Robot căn giữa và bay nhấp nhô */
+    .robot-container {
+        margin-bottom: -20px;
+        z-index: 100;
+        animation: float 3s ease-in-out infinite;
         display: flex;
         justify-content: center;
     }
     @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-15px); }
-        100% { transform: translateY(0px); }
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
     }
 
-    /* Nút bấm Neon Blue */
+    /* Nút bấm Blue Neon */
     div.stButton > button {
-        background: linear-gradient(90deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%) !important;
+        background: linear-gradient(90deg, #004494 0%, #0066cc 100%) !important;
         color: white !important;
-        border-radius: 30px !important;
+        border-radius: 50px !important;
         border: none !important;
-        height: 50px !important;
+        height: 55px !important;
         width: 100% !important;
         font-weight: bold !important;
-        box-shadow: 0 5px 15px rgba(0, 82, 212, 0.3);
-        margin-top: 15px;
+        font-size: 18px !important;
+        box-shadow: 0 10px 20px rgba(0, 68, 148, 0.2);
+        transition: 0.3s;
     }
+    div.stButton > button:hover { transform: scale(1.03); box-shadow: 0 15px 25px rgba(0, 68, 148, 0.3); }
 
-    /* Sidebar và các thành phần khác */
+    /* Sidebar và Footer */
     [data-testid="stSidebar"] { background: #004494 !important; }
-    .sidebar-text { color: #ffffff !important; text-align: center; }
+    .sidebar-text { color: white !important; }
     #MainMenu, footer, header {visibility: hidden;}
 </style>
 ''', unsafe_allow_html=True)
 
-# 3. Hàm nạp dữ liệu từ thư mục data
+# 3. Hàm nạp dữ liệu
 @st.cache_resource
 def load_data():
     knowledge = ""
@@ -87,25 +92,26 @@ def load_data():
 knowledge_context, all_files = load_data()
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# 4. Logic Đăng nhập
+# 4. Quản lý trạng thái
 if "logged" not in st.session_state: st.session_state.logged = False
 if "messages" not in st.session_state: st.session_state.messages = []
 
+# 5. GIAO DIỆN ĐĂNG NHẬP (ÉP GIỮA)
 if not st.session_state.logged:
-    # HIỂN THỊ MÀN HÌNH CHÀO CĂN GIỮA TUYỆT ĐỐI
-    st.markdown('<div class="main-login-container">', unsafe_allow_html=True)
+    # Sử dụng HTML wrapper để chắc chắn căn giữa
+    st.markdown('<div class="main-wrapper">', unsafe_allow_html=True)
     
-    # 1. Robot nằm trên
-    st.markdown('<div class="robot-box">', unsafe_allow_html=True)
-    st.image("https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png", width=200)
+    # Robot bay ở trên
+    st.markdown('<div class="robot-container">', unsafe_allow_html=True)
+    st.image("https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png", width=220)
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # 2. Card đăng nhập
+    # Bảng Card ở dưới
     st.markdown('<div class="login-card">', unsafe_allow_html=True)
-    st.markdown("<h1 style='color: #004494; font-size: 2rem; margin-bottom: 10px;'>HÒA KHÁNH DIGITAL AI</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #5d6d7e; font-weight: 500; margin-bottom: 25px;'>Trợ lý số phục vụ Công đoàn & Chuyển đổi số</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color: #004494; font-size: 2.2rem; margin-bottom: 0;'>HÒA KHÁNH DIGITAL AI</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #666; font-weight: 500; margin-top: 10px; margin-bottom: 30px;'>Hệ thống Trợ lý số phục vụ Công đoàn cơ sở</p>", unsafe_allow_html=True)
     
-    name = st.text_input("Định danh cán bộ:", placeholder="Nhập họ tên tại đây...", label_visibility="collapsed")
+    name = st.text_input("Nhập họ tên của Anh/Chị:", placeholder="Ví dụ: Nguyễn Thị Lan", label_visibility="collapsed")
     
     if st.button("🚀 KÍCH HOẠT HỆ THỐNG"):
         if name:
@@ -113,33 +119,35 @@ if not st.session_state.logged:
             st.session_state.logged = True
             st.rerun()
         else:
-            st.warning("Vui lòng nhập tên!")
-            
-    st.markdown(f"<p style='font-size: 0.85rem; color: #aab8c2; margin-top: 30px;'>Phát triển bởi: <b>Lương Tấn Phát</b></p>", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True) # Đóng login-card
-    st.markdown('</div>', unsafe_allow_html=True) # Đóng main-login-container
+            st.warning("Vui lòng nhập họ tên để định danh!")
+
+    st.markdown(f"<p style='font-size: 0.8rem; color: #999; margin-top: 40px;'>Xây dựng và vận hành bởi: <br><b>Lương Tấn Phát</b></p>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True) # Đóng card
+    st.markdown('</div>', unsafe_allow_html=True) # Đóng wrapper
 
 else:
-    # GIAO DIỆN CHAT CHÍNH
+    # 6. GIAO DIỆN CHAT (SIDEBAR)
     with st.sidebar:
         st.markdown('<div style="text-align: center;">', unsafe_allow_html=True)
-        st.image("https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png", width=110)
+        st.image("https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png", width=120)
         st.markdown(f"<p class='sidebar-text' style='font-size: 1.1rem;'>Chào: <b>{st.session_state.user}</b></p>", unsafe_allow_html=True)
         st.markdown("<hr style='border-color: rgba(255,255,255,0.2);'>", unsafe_allow_html=True)
         
+        # Nút hỏi nhanh
         if st.button("📩 Phản ánh kiến nghị"):
             st.session_state.messages.append({"role": "user", "content": "Quy trình tiếp nhận phản ánh kiến nghị"})
             st.rerun()
         if st.button("📝 Đăng ký Công đoàn"):
             st.session_state.messages.append({"role": "user", "content": "Cho tôi mẫu đơn gia nhập công đoàn"})
             st.rerun()
-        if st.button("🗑️ XÓA PHIÊN CHAT"):
+        if st.button("🗑️ Xóa hội thoại"):
             st.session_state.messages = []
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # Hiển thị hội thoại
-    st.markdown(f"<h3 style='color: #004494;'>AI Hòa Khánh sẵn sàng!</h3>", unsafe_allow_html=True)
+    # Hiển thị Chat
+    st.markdown(f"<h3 style='color: #004494;'>🤖 Trợ lý AI xã Hòa Khánh sẵn sàng!</h3>", unsafe_allow_html=True)
+    
     for idx, msg in enumerate(st.session_state.messages):
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
@@ -149,7 +157,7 @@ else:
                     with open(all_files[target], "rb") as f:
                         st.download_button(label="📥 Tải Mẫu đơn 02 (Word)", data=f, file_name=target, key=f"dl_{idx}")
 
-    if prompt := st.chat_input("Nhập câu hỏi..."):
+    if prompt := st.chat_input("Hỏi tôi về nghiệp vụ công đoàn..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.rerun()
 
@@ -157,7 +165,7 @@ else:
         with st.chat_message("assistant"):
             try:
                 res = client.chat.completions.create(
-                    messages=[{"role": "system", "content": f"Bạn là trợ lý công đoàn xã Hòa Khánh. Dùng dữ liệu {knowledge_context[:10000]}. Gọi là Anh/Chị {st.session_state.user}."},
+                    messages=[{"role": "system", "content": f"Bạn là trợ lý AI công đoàn xã Hòa Khánh. Dùng dữ liệu {knowledge_context[:10000]}."},
                               {"role": "user", "content": st.session_state.messages[-1]["content"]}],
                     model="llama-3.1-8b-instant")
                 ans = res.choices[0].message.content
@@ -165,3 +173,5 @@ else:
                 st.session_state.messages.append({"role": "assistant", "content": ans})
                 st.rerun()
             except: st.error("Lỗi AI!")
+
+st.markdown(f'<div style="text-align:center; color:#888; font-size:0.8rem; margin-top:30px;">Tác giả: <b>Lương Tấn Phát</b> | Dự án Chuyển đổi số cơ sở</div>', unsafe_allow_html=True)
