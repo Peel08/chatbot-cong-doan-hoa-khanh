@@ -5,10 +5,11 @@ from docx import Document
 import io
 import os
 
-# --- 1. CẤU HÌNH TRANG ---
+# --- 1. CẤU HÌNH TRANG & LOGO APP ---
+# Thay 'logo.png' bằng file ảnh logo của Phát trên GitHub để đổi icon App
 st.set_page_config(page_title="Công đoàn Hòa Khánh", page_icon="logo.png", layout="wide")
 
-# --- 2. HÀM ĐỌC DỮ LIỆU NỘI BỘ (CHẠY NGẦM) ---
+# --- 2. HÀM ĐỌC DỮ LIỆU ---
 @st.cache_resource
 def load_internal_data():
     combined_text = ""
@@ -28,114 +29,95 @@ def load_internal_data():
             except: pass
     return combined_text
 
-# --- 3. GIAO DIỆN CSS CHUẨN MOBILE (XANH ĐẬM CÔNG ĐOÀN) ---
+# --- 3. CSS TỐI ƯU GIAO DIỆN MOBILE ---
 st.markdown("""
     <style>
     .main { background-color: #ffffff; }
-    [data-testid="stSidebar"] { background-color: #004494 !important; text-align: center; }
-    [data-testid="stSidebar"] [data-testid="stImage"] { display: flex; justify-content: center; margin-top: 20px; }
-    .sidebar-title { color: white; text-align: center; font-size: 1.1rem; font-weight: bold; margin-top: 10px; text-transform: uppercase; }
-    .user-card { background-color: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 25px; border: 1px solid rgba(255, 255, 255, 0.2); color: white; text-align: center; margin: 20px 10px; }
-    .stButton > button { background-color: #ffffff !important; color: #004494 !important; border-radius: 15px !important; font-weight: bold !important; width: 100% !important; height: 45px; }
-    .author-info { color: rgba(255, 255, 255, 0.7); text-align: center; font-size: 0.8rem; margin-top: 40px; }
+    /* Sidebar xanh đậm chuẩn Công đoàn */
+    [data-testid="stSidebar"] { background-color: #004494 !important; }
+    .sidebar-text { color: white; text-align: center; font-size: 0.9rem; margin-top: 20px; }
+    /* Nút bấm bo góc chuyên nghiệp */
+    .stButton > button { 
+        background-color: #004494 !important; 
+        color: white !important; 
+        border-radius: 20px !important; 
+        width: 100% !important;
+        font-weight: bold !important;
+    }
+    /* Căn giữa màn hình chào */
+    .welcome-container { text-align: center; padding-top: 50px; }
     .author-footer { text-align: center; color: #7f8c8d; font-size: 0.8rem; margin-top: 50px; padding: 20px; border-top: 1px solid #eee; }
-    input { color: #000000 !important; }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. KẾT NỐI API GROQ ---
+# --- 4. KẾT NỐI API ---
 if "GROQ_API_KEY" in st.secrets:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 else:
-    st.error("Lỗi: Chưa tìm thấy GROQ_API_KEY trong Secrets!")
+    st.error("Chưa cấu hình API Key!")
     st.stop()
 
 internal_knowledge = load_internal_data()
 
-# --- 5. SIDEBAR (THANH ĐIỀU HƯỚNG) ---
-with st.sidebar:
-    st.image("logo.png", width=180)
-    st.markdown("<p class='sidebar-title'>CÔNG ĐOÀN HÒA KHÁNH</p>", unsafe_allow_html=True)
-    
-    if "user_name" not in st.session_state:
-        name_input = st.text_input("Đăng nhập:", placeholder="Nhập họ tên của bạn...")
-        if st.button("🚀 KÍCH HOẠT"):
-            if name_input:
-                st.session_state.user_name = name_input
-                st.rerun()
-    else:
-        st.markdown(f'''
-            <div class="user-card">
-                <span style="font-size: 0.85rem; opacity: 0.9;">Xin chào</span><br>
-                <span style="font-size: 1.2rem; font-weight: bold;">{st.session_state.user_name}</span>
-            </div>
-        ''', unsafe_allow_html=True)
-        if st.button("🗑️ XÓA HỘI THOẠI"):
-            st.session_state.messages = []
-            st.rerun()
-        st.markdown(f"<p class='author-info'>Thiết kế bởi:<br><b>Lương Tấn Phát</b></p>", unsafe_allow_html=True)
-
-# --- 6. LOGIC PHÂN CHIA MÀN HÌNH ---
-
-# Kiểm tra xem người dùng đã đăng nhập chưa
+# --- 5. QUẢN LÝ ĐĂNG NHẬP & CHAT ---
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 if not st.session_state.logged_in:
-    # --- GIAO DIỆN MÀN HÌNH CHÀO / ĐĂNG NHẬP ---
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    st.image("logo.png", width=120) # Đảm bảo file logo.png có trên GitHub
-    st.markdown("<h2 style='text-align: center; color: #004494;'>CHÀO MỪNG ANH/CHỊ</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #666;'>Vui lòng xác nhận danh tính để bắt đầu</p>", unsafe_allow_html=True)
-    
-    with st.container():
-        col1, col2, col3 = st.columns([1,2,1])
-        with col2:
-            name_input = st.text_input("Họ và tên của Anh/Chị:", placeholder="Nhập tên tại đây...")
-            if st.button("🚀 BẮT ĐẦU SỬ DỤNG"):
-                if name_input:
-                    st.session_state.user_name = name_input
-                    st.session_state.logged_in = True
-                    st.rerun()
-                else:
-                    st.warning("Anh/Chị vui lòng nhập tên để tiếp tục!")
+    # --- MÀN HÌNH ĐĂNG NHẬP (CHÍNH GIỮA) ---
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("<div class='welcome-container'>", unsafe_allow_html=True)
+        st.image("logo.png", width=150)
+        st.markdown("<h2 style='text-align: center; color: #004494;'>TRỢ LÝ ẢO CÔNG ĐOÀN</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center;'>Chào mừng Anh/Chị đến với hệ thống hỗ trợ trực tuyến xã Hòa Khánh</p>", unsafe_allow_html=True)
+        
+        name_input = st.text_input("Nhập họ và tên của Anh/Chị để bắt đầu:", placeholder="Ví dụ: Nguyễn Văn A")
+        if st.button("🚀 KÍCH HOẠT HỆ THỐNG"):
+            if name_input:
+                st.session_state.user_name = name_input
+                st.session_state.logged_in = True
+                st.rerun()
+            else:
+                st.error("Vui lòng nhập tên!")
+        st.markdown("</div>", unsafe_allow_html=True)
+
 else:
-    # --- GIAO DIỆN TRÒ CHUYỆN (SAU KHI ĐĂNG NHẬP) ---
-    st.markdown(f"<h3 style='text-align: center; color: #004494;'>TRỢ LÝ CÔNG ĐOÀN HÒA KHÁNH</h3>", unsafe_allow_html=True)
-    st.markdown(f"<p style='text-align: center; font-size: 0.9rem;'>Chào Anh/Chị: <b>{st.session_state.user_name}</b></p>", unsafe_allow_html=True)
-    st.markdown("---")
+    # --- GIAO DIỆN CHAT (SAU KHI ĐĂNG NHẬP) ---
+    with st.sidebar:
+        st.image("logo.png", width=120)
+        st.markdown(f"<div class='sidebar-text'>Đang phục vụ:<br><b>{st.session_state.user_name}</b></div>", unsafe_allow_html=True)
+        if st.button("🗑️ XÓA CHAT"):
+            st.session_state.messages = []
+            st.rerun()
+        st.markdown("<br><p class='sidebar-text'>Thiết kế: Lương Tấn Phát</p>", unsafe_allow_html=True)
+
+    st.markdown(f"<h4 style='color: #004494;'>Chào Anh/Chị {st.session_state.user_name}, tôi có thể giúp gì ạ?</h4>", unsafe_allow_html=True)
 
     if "messages" not in st.session_state: st.session_state.messages = []
-    
-    # Hiển thị lịch sử chat
     for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]): 
-            st.markdown(msg["content"])
+        with st.chat_message(msg["role"]): st.markdown(msg["content"])
 
-    # Ô nhập nội dung chat
-    if prompt := st.chat_input("Hỏi tôi về chính sách, thủ tục..."):
+    if prompt := st.chat_input("Nhập câu hỏi..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
 
         with st.chat_message("assistant"):
-            with st.spinner("⚡ Đang tra cứu..."):
-                user_name = st.session_state.user_name
-                context = f"DỮ LIỆU NỘI BỘ XÃ HÒA KHÁNH:\n{internal_knowledge[:8000]}\n\n"
-                
+            with st.spinner("Đang tra cứu..."):
                 try:
+                    context = f"DỮ LIỆU NỘI BỘ:\n{internal_knowledge[:8000]}"
                     chat_completion = client.chat.completions.create(
                         messages=[
-                            {"role": "system", "content": f"Bạn là Trợ lý AI Công đoàn xã Hòa Khánh. Luôn gọi người dùng là Anh/Chị {user_name}. Không dùng từ Quý khách, Bác, Chú. Trả lời lịch sự, đúng trọng tâm."},
-                            {"role": "user", "content": f"{context} CÂU HỎI: {prompt}"}
+                            {"role": "system", "content": f"Bạn là Trợ lý AI Công đoàn xã Hòa Khánh. Gọi người dùng là Anh/Chị {st.session_state.user_name}. Không dùng từ Quý khách, Bác, Chú. Trả lời chuyên nghiệp."},
+                            {"role": "user", "content": f"{context}\n\nCÂU HỎI: {prompt}"}
                         ],
                         model="llama-3.1-8b-instant",
                     )
                     ans = chat_completion.choices[0].message.content
                     st.markdown(ans)
                     st.session_state.messages.append({"role": "assistant", "content": ans})
-                except Exception as e:
-                    st.error("Hệ thống bận, Anh/Chị vui lòng thử lại sau.")
+                except:
+                    st.error("Lỗi kết nối!")
 
-# --- 7. CHÂN TRANG ---
+# --- 6. CHÂN TRANG ---
 st.markdown(f'<div class="author-footer">Xây dựng bởi <b>Lương Tấn Phát</b><br>© 2026 Công đoàn Hòa Khánh, Tây Ninh</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="author-footer">Xây dựng và vận hành bởi <b>Lương Tấn Phát</b><br>© 2026 Công đoàn xã Hòa Khánh, Tây Ninh</div>', unsafe_allow_html=True)
