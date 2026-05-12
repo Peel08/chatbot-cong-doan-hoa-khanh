@@ -8,24 +8,7 @@ import os
 # --- 1. CẤU HÌNH TRANG ---
 st.set_page_config(page_title="Công đoàn Hòa Khánh AI", page_icon="🇻🇳", layout="wide")
 
-# --- 2. HÀM PHÂN BIỆT DANH XƯNG (AI CHẠY NGẦM SIÊU CHÍNH XÁC) ---
-def get_gender_title(name, client):
-    try:
-        # Ép AI trả về kết quả máy móc nhất có thể để code không nhận diện sai
-        check_prompt = f"Phân tích tên '{name}'. Nếu là Nam trả về duy nhất từ 'Anh', nếu là Nữ trả về duy nhất từ 'Chị'. Trả về đúng 1 từ, không dấu chấm, không thêm gì khác."
-        response = client.chat.completions.create(
-            messages=[{"role": "user", "content": check_prompt}],
-            model="llama-3.1-8b-instant",
-            max_tokens=5,
-            temperature=0  # Giữ cho câu trả lời luôn ổn định, không sáng tạo lung tung
-        )
-        title = response.choices[0].message.content.strip().replace(".", "")
-        # Nếu AI trả ra kết quả lạ, mặc định dùng "Anh/Chị" thay vì "Quý khách" để gần gũi
-        return title if title in ["Anh", "Chị"] else "Anh/Chị"
-    except:
-        return "Anh/Chị"
-
-# --- 3. HÀM ĐỌC DỮ LIỆU NỘI BỘ ---
+# --- 2. HÀM ĐỌC DỮ LIỆU NỘI BỘ ---
 @st.cache_resource
 def load_internal_data():
     combined_text = ""
@@ -45,7 +28,7 @@ def load_internal_data():
             except: pass
     return combined_text
 
-# --- 4. GIAO DIỆN CSS CHUẨN MOBILE ---
+# --- 3. GIAO DIỆN CSS CHUẨN MOBILE (XANH ĐẬM) ---
 st.markdown("""
     <style>
     .main { background-color: #ffffff; }
@@ -60,7 +43,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 5. KẾT NỐI API ---
+# --- 4. KẾT NỐI API ---
 if "GROQ_API_KEY" in st.secrets:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 else:
@@ -69,7 +52,7 @@ else:
 
 internal_knowledge = load_internal_data()
 
-# --- 6. SIDEBAR ---
+# --- 5. SIDEBAR ---
 with st.sidebar:
     st.image("logo.png", width=180)
     st.markdown("<p class='sidebar-title'>CÔNG ĐOÀN HÒA KHÁNH</p>", unsafe_allow_html=True)
@@ -79,14 +62,11 @@ with st.sidebar:
         if st.button("🚀 KÍCH HOẠT"):
             if name_input:
                 st.session_state.user_name = name_input
-                with st.spinner("Đang nhận diện danh xưng..."):
-                    st.session_state.gender_title = get_gender_title(name_input, client)
                 st.rerun()
     else:
-        title = st.session_state.get("gender_title", "Anh/Chị")
         st.markdown(f'''
             <div class="user-card">
-                <span style="font-size: 0.85rem; opacity: 0.9;">Xin chào {title}</span><br>
+                <span style="font-size: 0.85rem; opacity: 0.9;">Xin chào</span><br>
                 <span style="font-size: 1.2rem; font-weight: bold;">{st.session_state.user_name}</span>
             </div>
         ''', unsafe_allow_html=True)
@@ -95,7 +75,7 @@ with st.sidebar:
             st.rerun()
         st.markdown(f"<p class='author-info'>Thiết kế bởi:<br><b>Lương Tấn Phát</b></p>", unsafe_allow_html=True)
 
-# --- 7. GIAO DIỆN CHAT ---
+# --- 6. GIAO DIỆN CHAT ---
 st.markdown("<h2 style='text-align: center; color: #004494;'>TRỢ LÝ ẢO CÔNG ĐOÀN</h2>", unsafe_allow_html=True)
 
 if "messages" not in st.session_state: st.session_state.messages = []
@@ -108,7 +88,6 @@ if prompt := st.chat_input("Nhập câu hỏi của bạn..."):
 
     with st.chat_message("assistant"):
         with st.spinner("⚡ Đang tra cứu dữ liệu..."):
-            title = st.session_state.get("gender_title", "Anh/Chị")
             user_name = st.session_state.get("user_name", "")
             context = f"DỮ LIỆU NỘI BỘ XÃ HÒA KHÁNH:\n{internal_knowledge[:8000]}\n\n"
             
@@ -118,13 +97,13 @@ if prompt := st.chat_input("Nhập câu hỏi của bạn..."):
                         {
                             "role": "system", 
                             "content": f"""Bạn là Trợ lý AI chuyên trách của Công đoàn Hòa Khánh.
-                            QUY TẮC PHỤC VỤ:
-                            - Gọi người dùng là '{title}' hoặc '{title} {user_name}'. 
-                            - TUYỆT ĐỐI KHÔNG sử dụng từ 'Quý khách'.
-                            - Xưng hô gần gũi, thân thiện nhưng chuẩn mực cán bộ địa phương.
-                            - Ưu tiên thông tin trong file nội bộ. Nếu không có, hãy tư vấn dựa trên kiến thức AI một cách tận tâm."""
+                            QUY TẮC XƯNG HÔ:
+                            1. Luôn gọi người dùng là 'Anh/Chị' hoặc 'Anh/Chị {user_name}'. 
+                            2. TUYỆT ĐỐI KHÔNG sử dụng các từ: 'Bác', 'Chú', 'Cô', 'Gì', 'Em', 'Quý khách'.
+                            3. Xưng hô lịch sự, chuẩn mực phong cách công sở.
+                            4. Ưu tiên dữ liệu từ file nội bộ. Nếu không có, tư vấn bằng kiến thức AI của bạn."""
                         },
-                        {"role": "user", "content": f"{context} Câu hỏi từ {title} {user_name}: {prompt}"}
+                        {"role": "user", "content": f"{context} Câu hỏi từ Anh/Chị {user_name}: {prompt}"}
                     ],
                     model="llama-3.1-8b-instant",
                 )
@@ -132,7 +111,7 @@ if prompt := st.chat_input("Nhập câu hỏi của bạn..."):
                 st.markdown(ans)
                 st.session_state.messages.append({"role": "assistant", "content": ans})
             except Exception as e:
-                st.error("Hệ thống đang bận phục vụ nhiều người dùng, vui lòng đợi giây lát.")
+                st.error("Hệ thống bận, vui lòng hỏi lại sau.")
 
-# --- 8. CHÂN TRANG ---
+# --- 7. CHÂN TRANG ---
 st.markdown(f'<div class="author-footer">Xây dựng và vận hành bởi <b>Lương Tấn Phát</b><br>© 2026 Công đoàn Hòa Khánh, Tây Ninh</div>', unsafe_allow_html=True)
