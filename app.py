@@ -92,7 +92,7 @@ if prompt := st.chat_input("Hỏi tôi về chính sách..."):
                         {"role": "system", "content": "Bạn là trợ lý AI chuyên nghiệp của Công đoàn Hòa Khánh. Trả lời bằng tiếng Việt, ngắn gọn, chuẩn xác."},
                         {"role": "user", "content": f"{context} Câu hỏi: {prompt}"}
                     ],
-                    model="llama3-8b-8192", 
+                    model="llama-3.1-8b-instant", 
                 )
                 ans = chat_completion.choices[0].message.content
                 st.markdown(ans)
