@@ -33,7 +33,7 @@ def load_internal_data():
 # Lưu ý: Phát nên thay cái link href bên dưới bằng link ảnh thật trên GitHub của Phát để iPhone hiện icon đẹp nhất
 st.markdown("""
     <head>
-        <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/logo.png">
+        <link rel="apple-touch-icon" href="logo.png">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     </head>
