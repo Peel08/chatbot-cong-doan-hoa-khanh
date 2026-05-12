@@ -93,13 +93,13 @@ if not st.session_state.logged:
         st.markdown('''
         <div class="login-card">
             <i class="fas fa-microchip" style="font-size: 50px; color: #004494; margin-bottom: 20px;"></i>
-            <h1 style='color: #004494; font-family: sans-serif;'>HÒA KHÁNH DIGITAL AI</h1>
+            <h1 style='color: #004494; font-family: sans-serif;'>CÔNG ĐOÀN SỐ - XÃ HÒA KHÁNH - TỈNH TÂY NINH</h1>
             <p style="color: #666;">Hệ thống Trợ lý số phục vụ Công đoàn & Chuyển đổi số cơ sở</p>
             <p style="font-size: 0.9rem;">Chuyên gia phát triển: <b>Lương Tấn Phát</b></p>
         </div>
         ''', unsafe_allow_html=True)
         
-        name = st.text_input("Nhập danh tính Cán bộ/Đoàn viên:")
+        name = st.text_input("Nhập họ và tên Cán bộ/Đoàn viên:")
         if st.button("KÍCH HOẠT TRỢ LÝ SỐ"):
             if name:
                 st.session_state.user = name
@@ -119,14 +119,14 @@ else:
         ''', unsafe_allow_html=True)
         st.markdown("<hr style='border-color: rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
         
-        if st.button("XÓA DỮ LIỆU PHIÊN"):
+        if st.button("XÓA DỮ LIỆU TRÒ CHUYỆN"):
             st.session_state.messages = []
             st.rerun()
         
         st.markdown(f'''
             <div style="margin-top: 100px; text-align:center; opacity: 0.8;">
                 <i class="fas fa-code" style="color: white; font-size: 15px;"></i>
-                <p class='sidebar-text' style='font-size:0.75rem;'>Phát triển bởi:<br><b>Lương Tấn Phát</b><br>IUH Student</p>
+                <p class='sidebar-text' style='font-size:0.75rem;'>Phát triển bởi:<br><b>Lương Tấn Phát</b><br></p>
             </div>
         ''', unsafe_allow_html=True)
 
@@ -158,7 +158,7 @@ else:
 # --- 5. CHÂN TRANG DIGITAL ---
 st.markdown(f'''
     <div class="digital-footer">
-        <i class="fas fa-project-diagram"></i> Dự án số hóa Công đoàn cơ sở<br>
+        <i class="fas fa-project-diagram"></i> Dự án số hóa Công đoàn xã Hòa Khánh, tỉnh Tây Ninh<br>
         Tác giả: <b>Lương Tấn Phát</b> | Xã Hòa Khánh, Tây Ninh
     </div>
 ''', unsafe_allow_html=True)
