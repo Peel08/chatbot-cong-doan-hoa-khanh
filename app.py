@@ -27,7 +27,7 @@ def load_internal_data():
             except: pass
     return combined_text
 
-# --- 2. CSS CHUẨN MOBILE CỦA PHÁT ---
+# --- 2. CSS CHUẨN MOBILE ---
 st.markdown("""
     <style>
     .main { background-color: #ffffff; }
@@ -42,11 +42,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 3. KẾT NỐI GROQ AI (XỊN HƠN GEMINI FREE) ---
-if "GROQ_API_KEY" in st.secrets:
-    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-else:
-    st.error("Thiếu GROQ_API_KEY trong Secrets!")
+# --- 3. KẾT NỐI GROQ AI ---
+# Dùng lệnh try-except để bắt lỗi ngay từ khâu kết nối
+try:
+    if "GROQ_API_KEY" in st.secrets:
+        client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+    else:
+        st.error("❌ Chưa tìm thấy GROQ_API_KEY trong mục Secrets của Streamlit!")
+        st.stop()
+except Exception as e:
+    st.error(f"❌ Lỗi cấu hình: {e}")
     st.stop()
 
 internal_knowledge = load_internal_data()
@@ -78,20 +83,22 @@ if prompt := st.chat_input("Hỏi tôi về chính sách..."):
     with st.chat_message("user"): st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("⚡ Đang phản hồi tức thì..."):
-            context = f"Dữ liệu nội bộ của Công đoàn Hòa Khánh:\n{internal_knowledge[:10000]}\n\n"
+        with st.spinner("⚡ Đang phản hồi..."):
+            context = f"Dữ liệu nội bộ:\n{internal_knowledge[:8000]}\n\n"
             try:
+                # Ép sử dụng mô hình ổn định nhất
                 chat_completion = client.chat.completions.create(
                     messages=[
-                        {"role": "system", "content": "Bạn là trợ lý AI chuyên nghiệp của Công đoàn Hòa Khánh. Trả lời ngắn gọn, chuẩn xác dựa trên dữ liệu cung cấp."},
-                        {"role": "user", "content": f"{context} Câu hỏi của {st.session_state.user_name}: {prompt}"}
+                        {"role": "system", "content": "Bạn là trợ lý AI chuyên nghiệp của Công đoàn Hòa Khánh. Trả lời bằng tiếng Việt, ngắn gọn, chuẩn xác."},
+                        {"role": "user", "content": f"{context} Câu hỏi: {prompt}"}
                     ],
-                    model="llama-3-70b-8192", # Model cực nhanh và khôn
+                    model="llama3-8b-8192", 
                 )
                 ans = chat_completion.choices[0].message.content
                 st.markdown(ans)
                 st.session_state.messages.append({"role": "assistant", "content": ans})
-            except:
-                st.error("Lỗi kết nối. Phát kiểm tra lại Key nhé!")
+            except Exception as e:
+                # Hiện chi tiết lỗi để Phát chụp màn hình mình xem
+                st.error(f"❌ Lỗi AI: {str(e)}")
 
 st.markdown(f'<div class="author-footer">Xây dựng bởi <b>Lương Tấn Phát</b><br>© 2026 Công đoàn Hòa Khánh</div>', unsafe_allow_html=True)
