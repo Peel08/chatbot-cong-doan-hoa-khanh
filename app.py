@@ -2,104 +2,121 @@ import streamlit as st
 import google.generativeai as genai
 import time
 
-# 1. Cấu hình trang (Luôn ở dòng đầu)
+# 1. CẤU HÌNH TRANG
 st.set_page_config(page_title="Công đoàn Hòa Khánh", page_icon="🇻🇳", layout="wide")
 
-# 2. CSS FIX LỖI MÀU CHỮ VÀ GIAO DIỆN
+# 2. CSS "SIÊU CẤP": Fix lỗi màu chữ, làm Sidebar sang trọng
 st.markdown("""
     <style>
-    .main { background-color: #f0f5ff; }
+    /* Nền chính sáng sủa */
+    .main { background-color: #f4f7f9; }
     
-    /* FIX: Đảm bảo chữ trong TẤT CẢ các ô nhập liệu luôn là màu đen */
-    input {
-        color: #000000 !important;
-        background-color: #ffffff !important;
-    }
-    
-    /* Màu nền Sidebar */
+    /* Sidebar thiết kế hiện đại */
     [data-testid="stSidebar"] {
-        background-color: #0056b3;
+        background: linear-gradient(180deg, #0056b3 0%, #003366 100%);
     }
     
-    /* Chữ hướng dẫn trong Sidebar màu trắng */
-    [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label {
+    /* FIX lỗi khung chào bị xấu: Thay bằng Card trắng tinh tế */
+    .user-card {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
         color: white !important;
+        margin-bottom: 20px;
     }
 
-    /* Bong bóng chat */
-    .stChatMessage { border-radius: 15px; }
+    /* Đảm bảo ô nhập liệu luôn dễ nhìn */
+    input {
+        color: #1f1f1f !important;
+        background-color: #ffffff !important;
+        border-radius: 8px !important;
+    }
+
+    /* Chữ tiêu đề Sidebar */
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+        color: #ffffff !important;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* Nút xóa lịch sử xịn hơn */
+    .stButton>button {
+        width: 100%;
+        border-radius: 8px;
+        border: none;
+        transition: 0.3s;
+    }
     
-    .footer {
-        position: fixed;
-        left: 0; bottom: 0; width: 100%;
-        text-align: center; color: #888; font-size: 12px;
+    /* Làm đẹp bong bóng chat */
+    .stChatMessage {
+        border-radius: 15px !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Kết nối AI
+# 3. KẾT NỐI AI
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
     model = genai.GenerativeModel("gemini-3-flash-preview")
 else:
-    st.error("Thiếu API Key!")
+    st.error("⚠️ Thiếu API Key!")
     st.stop()
 
-# 4. Quản lý Session (Fix lỗi xóa lịch sử)
-if "user_name" not in st.session_state:
-    st.session_state.user_name = None
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# 4. QUẢN LÝ PHIÊN
+if "user_name" not in st.session_state: st.session_state.user_name = None
+if "messages" not in st.session_state: st.session_state.messages = []
 
-# 5. THANH BÊN (SIDEBAR)
+# 5. THANH BÊN (SIDEBAR) - THIẾT KẾ MỚI
 with st.sidebar:
     st.image("logo.png", width=150)
-    st.markdown("### 🏛️ CÔNG ĐOÀN HÒA KHÁNH")
+    st.markdown("<h2 style='text-align: center;'>🏛️ CÔNG ĐOÀN HÒA KHÁNH</h2>", unsafe_allow_html=True)
+    st.write("---")
     
     if not st.session_state.user_name:
-        st.subheader("👤 Đăng nhập")
-        name = st.text_input("Nhập Họ tên của bạn:", key="input_name")
+        st.markdown("### 👤 Đăng nhập")
+        name = st.text_input("Nhập Họ tên của bạn:", key="name_box", placeholder="VD: Lương Tấn Phát")
         if st.button("🚀 Bắt đầu"):
             if name:
                 st.session_state.user_name = name
                 st.rerun()
         st.stop()
     else:
-        st.success(f"Chào bạn: {st.session_state.user_name}")
-        st.write("---")
-        st.caption("👨‍💻 Phát triển bởi: Lương Tấn Phát")
+        # Khung chào kiểu mới, không còn bị xanh lá xấu xí
+        st.markdown(f"""
+            <div class='user-card'>
+                <p style='margin:0; font-size: 14px; opacity: 0.8;'>Chào mừng trở lại,</p>
+                <p style='margin:0; font-size: 18px; font-weight: bold;'>{st.session_state.user_name}</p>
+            </div>
+        """, unsafe_allow_html=True)
         
-        # HÀM XÓA LỊCH SỬ CHUẨN
-        if st.button("🗑️ Xóa lịch sử"):
-            st.session_state.messages = [] # Xóa danh sách tin nhắn
-            # Xóa sạch các key liên quan đến hội thoại trong session
-            for key in st.session_state.keys():
-                if key not in ["user_name", "GOOGLE_API_KEY"]:
-                    del st.session_state[key]
+        st.write("📍 **Địa chỉ:** Hòa Khánh, Tây Ninh")
+        st.write(f"👨‍💻 **Dev:** Lương Tấn Phát")
+        
+        st.write("---")
+        if st.button("🗑️ Xóa lịch sử hội thoại"):
+            st.session_state.messages = []
             st.rerun()
 
-# 6. GIAO DIỆN CHÁNH
-st.markdown("<h1 style='text-align: center; color: #0056b3;'>🤖 TRỢ LÝ ẢO CÔNG ĐOÀN</h1>", unsafe_allow_html=True)
+# 6. GIAO DIỆN CHÍNH
+st.markdown("<h1 style='text-align: center; color: #0056b3;'>🤖 TRỢ LÝ ẢO CÔNG ĐOÀN VIÊN</h1>", unsafe_allow_html=True)
 
-# Hiển thị tin nhắn
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# 7. Ô NHẬP LIỆU CHÍNH
-if prompt := st.chat_input("Hỏi tôi về chính sách công đoàn..."):
+# 7. Ô NHẬP LIỆU
+if prompt := st.chat_input("Nhập câu hỏi của bạn tại đây..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Đang tra cứu..."):
+        with st.spinner("⚡ Đang trích xuất dữ liệu..."):
             try:
                 response = model.generate_content(prompt)
                 ans = response.text
                 st.markdown(ans)
                 st.session_state.messages.append({"role": "assistant", "content": ans})
             except Exception as e:
-                st.warning("Hệ thống bận, Phát đợi xíu rồi bấm gửi lại nhé!")
-
-st.markdown(f'<div class="footer">© 2026 Xây dựng và phát triển bởi Lương Tấn Phát</div>', unsafe_allow_html=True)
+                st.warning("Hệ thống đang bận, Phát vui lòng thử lại sau 30 giây!")
