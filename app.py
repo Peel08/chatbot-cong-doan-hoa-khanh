@@ -107,7 +107,7 @@ if not st.session_state.logged:
         
         st.markdown('''
         <div class="login-card">
-            <h1 style='color: #004494; font-family: sans-serif; margin-bottom:0;'>HÒA KHÁNH DIGITAL AI</h1>
+            <h1 style='color: #004494; font-family: sans-serif; margin-bottom:0;'>CÔNG ĐOÀN SỐ XÃ HÒA KHÁNH</h1>
             <p style="color: #666; font-weight: bold; margin-bottom: 15px;">Hệ thống Trợ lý số phục vụ Công đoàn & Chuyển đổi số</p>
             <p style="font-size: 0.9rem; color: #888;">Phát triển bởi: <b>Lương Tấn Phát</b></p>
         ''', unsafe_allow_html=True)
