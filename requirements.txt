@@ -1,4 +1,4 @@
-streamlit-mic-recorder
+streamlit
 groq
 PyPDF2
 python-docx
