@@ -6,7 +6,7 @@ import os
 # 1. Cấu hình trang
 st.set_page_config(page_title="Hòa Khánh Digital AI", page_icon="robot.png", layout="wide")
 
-# 2. CSS Siêu Công Nghệ & Căn giữa (GIỮ NGUYÊN KHÔNG ĐỔI)
+# 2. CSS Siêu Công Nghệ & Căn giữa (GIỮ NGUYÊN)
 st.markdown('''
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
@@ -36,7 +36,7 @@ st.markdown('''
 </style>
 ''', unsafe_allow_html=True)
 
-# 3. Hàm nạp dữ liệu từ thư mục data
+# 3. Hàm nạp dữ liệu (Tránh lỗi nếu thư mục data chưa có file)
 @st.cache_resource
 def load_data():
     knowledge = ""
@@ -59,7 +59,7 @@ client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 if "logged" not in st.session_state: st.session_state.logged = False
 if "messages" not in st.session_state: st.session_state.messages = []
 
-# 5. MÀN HÌNH ĐĂNG NHẬP (KHÔI PHỤC Y NHƯ CŨ)
+# 5. MÀN HÌNH ĐĂNG NHẬP
 if not st.session_state.logged:
     st.markdown("<br><br>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns([0.1, 0.8, 0.1])
@@ -78,7 +78,7 @@ if not st.session_state.logged:
         st.markdown(f'<p style="font-size: 0.85rem; color: #888; margin-top: 20px;">Phát triển bởi: <b>Lương Tấn Phát</b></p></div></div>', unsafe_allow_html=True)
 
 else:
-    # 6. SIDEBAR VỚI CÁC NÚT HỎI NHANH (KHÔI PHỤC Y NHƯ CŨ)
+    # 6. SIDEBAR
     with st.sidebar:
         st.markdown('<div style="text-align: center;">', unsafe_allow_html=True)
         st.markdown('<div class="robot-box"><img src="robot.png" width="110"></div>', unsafe_allow_html=True)
@@ -101,18 +101,27 @@ else:
             st.rerun()
         st.markdown(f'<div style="margin-top: 80px; opacity: 0.8;"><p class="sidebar-text" style="font-size:0.75rem;">Tác giả: <b>Lương Tấn Phát</b></p></div></div>', unsafe_allow_html=True)
 
-    # 7. GIAO DIỆN CHAT & TẢI FILE
+    # 7. GIAO DIỆN CHAT & FIX LỖI DUPLICATE ID
     st.markdown(f"<h3 style='color: #004494;'><i class='fas fa-robot'></i> Chào Anh/Chị {st.session_state.user}, AI đã sẵn sàng!</h3>", unsafe_allow_html=True)
     
-    for msg in st.session_state.messages:
+    # Duyệt qua lịch sử chat bằng enumerate để lấy chỉ số (idx) làm key cho nút
+    for idx, msg in enumerate(st.session_state.messages):
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
-            # Tự động hiện nút tải nếu AI trả lời về Đơn gia nhập
+            # Tự động hiện nút tải nếu nội dung nhắc đến đơn gia nhập
             if msg["role"] == "assistant" and "đơn gia nhập" in msg["content"].lower():
                 target_file = "MAU 02- MẪU 5a+5b ĐƠN XIN GIA NHẬP CÔNG ĐOÀN.docx"
                 if target_file in all_files:
-                    with open(all_files[target_file], "rb") as f:
-                        st.download_button(label="📥 Tải Mẫu đơn 02 (Word)", data=f, file_name=target_file)
+                    try:
+                        with open(all_files[target_file], "rb") as f:
+                            # Thêm key=f"btn_{idx}" để mỗi nút có ID duy nhất, không bị lỗi Duplicate
+                            st.download_button(
+                                label="📥 Tải Mẫu đơn 02 (Word)", 
+                                data=f, 
+                                file_name=target_file,
+                                key=f"dl_btn_{idx}" 
+                            )
+                    except: pass
 
     if prompt := st.chat_input("Nhập nội dung cần hỗ trợ..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
@@ -124,13 +133,13 @@ else:
                 user_q = st.session_state.messages[-1]["content"]
                 res = client.chat.completions.create(
                     messages=[
-                        {"role": "system", "content": f"Bạn là trợ lý công đoàn Hòa Khánh. Dùng dữ liệu này: {knowledge_context[:10000]}. Nếu hỏi về đơn gia nhập, hãy nhắc người dùng tải file bên dưới câu trả lời."},
+                        {"role": "system", "content": f"Bạn là trợ lý công đoàn Hòa Khánh. Dùng dữ liệu này để trả lời: {knowledge_context[:12000]}. Nếu hỏi về đơn gia nhập, hãy hướng dẫn và báo là đã đính kèm nút tải bên dưới."},
                         {"role": "user", "content": user_q}
                     ], model="llama-3.1-8b-instant")
                 ans = res.choices[0].message.content
                 st.markdown(ans)
                 st.session_state.messages.append({"role": "assistant", "content": ans})
                 st.rerun()
-            except: st.error("AI bận!")
+            except: st.error("AI đang bận, thử lại sau nhé!")
 
-st.markdown(f'<div class="digital-footer">Tác giả: <b>Lương Tấn Phát</b> | Hòa Khánh, Tây Ninh</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="digital-footer">Tác giả: <b>Lương Tấn Phát</b> | Dự án Chuyển đổi số cơ sở</div>', unsafe_allow_html=True)
