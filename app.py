@@ -3,7 +3,7 @@ from groq import Groq
 import os
 
 # 1. Cấu hình trang
-st.set_page_config(page_title="Hòa Khánh Digital AI", page_icon="robot.png", layout="wide")
+st.set_page_config(page_title="Hòa Khánh Digital AI", page_icon="logo.png", layout="wide")
 
 # 2. CSS CĂN GIỮA TUYỆT ĐỐI
 st.markdown('''
