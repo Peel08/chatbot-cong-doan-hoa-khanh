@@ -1,129 +1,191 @@
 import streamlit as st
 from groq import Groq
-from PyPDF2 import PdfReader
-from docx import Document
 import os
 
 # 1. Cấu hình trang
-st.set_page_config(page_title="Hòa Khánh Digital AI", page_icon="robot.png", layout="wide")
+st.set_page_config(page_title="Hòa Khánh Digital AI", page_icon="logo.png", layout="wide")
 
-# 2. Hàm đọc dữ liệu từ các file Phát đã chuẩn bị
-@st.cache_resource
-def load_knowledge_base():
-    combined_text = ""
-    data_folder = "data" # Phát tạo thư mục tên 'data' trên GitHub và bỏ các file vào đó
-    if os.path.exists(data_folder):
-        for filename in os.listdir(data_folder):
-            file_path = os.path.join(data_folder, filename)
-            try:
-                if filename.endswith(".pdf"):
-                    reader = PdfReader(file_path)
-                    for page in reader.pages:
-                        combined_text += page.extract_text() + "\n"
-                elif filename.endswith(".docx") or filename.endswith(".doc"):
-                    doc = Document(file_path)
-                    combined_text += "\n".join([para.text for para in doc.paragraphs]) + "\n"
-            except Exception as e:
-                print(f"Lỗi đọc file {filename}: {e}")
-    return combined_text
-
-# 3. CSS Giao diện (Giữ nguyên phong cách AI căn giữa)
+# 2. CSS CĂN GIỮA TUYỆT ĐỐI & GIAO DIỆN CÔNG NGHỆ
 st.markdown('''
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
-    .stApp { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
-    [data-testid="stSidebar"] { background: linear-gradient(180deg, #004494 0%, #001a35 100%) !important; }
-    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { align-items: center !important; text-align: center !important; }
-    .sidebar-text { color: #e0e0e0 !important; }
-    .stButton > button {
+    /* Nền gradient công nghệ */
+    .stApp {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    /* Sidebar Glassmorphism & Căn giữa nội dung */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #004494 0%, #001a35 100%) !important;
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    /* Ép tất cả widget trong sidebar ra giữa */
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+        align-items: center !important;
+        text-align: center !important;
+    }
+
+    /* Khung bao màn hình đăng nhập để căn giữa */
+    .login-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    .login-card {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 35px;
+        border-radius: 30px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 550px;
+        border: 1px solid #ffffff;
+        text-align: center;
+    }
+
+    /* Hiệu ứng Robot bay căn giữa */
+    .robot-box {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-bottom: 20px;
+        animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
+    }
+
+    /* Nút bấm Neon Blue */
+    div.stButton > button {
         background: linear-gradient(90deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%) !important;
         color: white !important;
-        border-radius: 20px !important;
+        border-radius: 30px !important;
+        border: none !important;
+        height: 50px !important;
         width: 100% !important;
-        margin-bottom: 5px;
-        font-size: 0.85rem !important;
+        font-weight: bold !important;
+        box-shadow: 0 4px 15px rgba(0, 82, 212, 0.4);
     }
-    .robot-box { animation: float 3s ease-in-out infinite; display: flex; justify-content: center; width: 100%; }
-    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
+
+    .sidebar-text { color: #e0e0e0 !important; text-align: center; }
+    .digital-footer { text-align: center; color: #5d6d7e; font-size: 0.85rem; margin-top: 50px; padding: 20px; border-top: 1px solid rgba(0,0,0,0.05); }
+    
     #MainMenu, footer, header {visibility: hidden;}
 </style>
 ''', unsafe_allow_html=True)
 
-# 4. Khởi tạo dữ liệu và API
+# 3. Kết nối API
 if "GROQ_API_KEY" in st.secrets:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 else:
-    st.error("Thiếu API Key!")
+    st.error("Lỗi: Thiếu API Key trong Secrets!")
     st.stop()
 
-knowledge_data = load_knowledge_base()
-
+# 4. Quản lý trạng thái
 if "logged" not in st.session_state: st.session_state.logged = False
-if "messages" not in st.session_state: st.session_state.messages = []
 
-# 5. Logic Đăng nhập / Chat
 if not st.session_state.logged:
+    # --- MÀN HÌNH CHÀO CĂN GIỮA TUYỆT ĐỐI ---
     st.markdown("<br><br>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([0.15, 0.7, 0.15])
+    
+    # Căn giữa bằng cột Streamlit
+    col1, col2, col3 = st.columns([0.1, 0.8, 0.1])
     with col2:
-        st.markdown('<div class="robot-box"><img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="200"></div>', unsafe_allow_html=True)
-        name = st.text_input("Định danh Cán bộ/Đoàn viên:", placeholder="Nhập tên...")
-        if st.button("🚀 KÍCH HOẠT"):
+        # Sử dụng login-wrapper để ép Robot và Card vào giữa hàng dọc
+        st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
+        
+        # 1. Robot ở trên cùng (Căn giữa)
+        st.markdown('<div class="robot-box">', unsafe_allow_html=True)
+        st.image("robot.png", width=200)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # 2. Bảng đăng nhập ở dưới (Căn giữa)
+        st.markdown('''
+        <div class="login-card">
+            <h1 style='color: #004494; margin-bottom:5px; font-family: sans-serif;'>HÒA KHÁNH DIGITAL AI</h1>
+            <p style="color: #666; font-weight: bold; margin-bottom: 20px;">Hệ thống Trợ lý số phục vụ Công đoàn & Chuyển đổi số</p>
+        ''', unsafe_allow_html=True)
+        
+        # Ô nhập tên (bỏ nhãn thừa để đẹp hơn)
+        name = st.text_input("Định danh Cán bộ/Đoàn viên:", placeholder="Nhập họ tên tại đây...", label_visibility="collapsed")
+        
+        if st.button("🚀 KÍCH HOẠT HỆ THỐNG"):
             if name:
                 st.session_state.user = name
                 st.session_state.logged = True
                 st.rerun()
-else:
-    with st.sidebar:
-        st.markdown('<div class="robot-box"><img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="110"></div>', unsafe_allow_html=True)
-        st.markdown(f"<p class='sidebar-text'>Cán bộ: <b style='color:#00d4ff;'>{st.session_state.user}</b></p>", unsafe_allow_html=True)
-        st.markdown("<hr style='border-color: rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
+            else:
+                st.warning("Vui lòng nhập tên!")
         
-        st.markdown("<p class='sidebar-text' style='font-size:0.8rem; opacity:0.7;'>TRA CỨU NHANH:</p>", unsafe_allow_html=True)
+        st.markdown(f'''
+            <p style="font-size: 0.85rem; color: #888; margin-top: 20px;">Phát triển bởi: <b>Lương Tấn Phát</b></p>
+        </div>''', unsafe_allow_html=True)
         
-        # Nút bấm đề xuất theo yêu cầu của Phát
-        if st.button("📩 Phản ánh kiến nghị"):
-            st.session_state.messages.append({"role": "user", "content": "Quy trình tiếp nhận phản ánh kiến nghị như thế nào?"})
-            st.rerun()
-        if st.button("🆘 Yêu cầu hỗ trợ"):
-            st.session_state.messages.append({"role": "user", "content": "Tôi muốn biết các bước yêu cầu hỗ trợ từ Công đoàn"})
-            st.rerun()
-        if st.button("📝 Đăng ký Công đoàn"):
-            st.session_state.messages.append({"role": "user", "content": "Cho tôi xem mẫu đơn và cách đăng ký gia nhập Công đoàn"})
-            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
-        if st.button("🗑️ XÓA PHIÊN CHAT"):
+else:
+    # --- GIAO DIỆN CHAT ---
+    with st.sidebar:
+        st.markdown('<div style="text-align: center;">', unsafe_allow_html=True)
+        st.markdown('<div class="robot-box" style="margin-bottom: 0px;">', unsafe_allow_html=True)
+        st.image("robot.png", width=110)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        st.markdown(f'''
+            <div style="margin-top: 10px;">
+                <p class='sidebar-text' style='margin-bottom: 5px; opacity: 0.8;'>Cán bộ truy cập:</p>
+                <b style='font-size: 1.2rem; color: #00d4ff; display: block;'>{st.session_state.user}</b>
+            </div>
+        ''', unsafe_allow_html=True)
+        
+        st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin: 25px 0;'>", unsafe_allow_html=True)
+        
+        if st.button("XÓA DỮ LIỆU PHIÊN"):
             st.session_state.messages = []
             st.rerun()
+        
+        st.markdown(f'''
+            <div style="margin-top: 80px; opacity: 0.8;">
+                <i class="fas fa-code" style="color: white; font-size: 18px;"></i>
+                <p class='sidebar-text' style='font-size:0.75rem; margin-top: 10px;'>
+                    Tác giả: <b>Lương Tấn Phát</b><br>
+                    Dự án Chuyển đổi số cơ sở
+                </p>
+            </div>
+        ''', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    # Hiển thị Chat
-    st.markdown(f"<h4 style='color:#004494;'>Hòa Khánh Digital AI xin chào!</h4>", unsafe_allow_html=True)
-    
+    st.markdown(f"<h3 style='color: #004494;'><i class='fas fa-robot'></i> Chào Anh/Chị {st.session_state.user}, AI đã sẵn sàng!</h3>", unsafe_allow_html=True)
+
+    if "messages" not in st.session_state: st.session_state.messages = []
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]): st.markdown(msg["content"])
 
-    if prompt := st.chat_input("Hỏi tôi về thủ tục, hồ sơ..."):
+    if prompt := st.chat_input("Nhập nội dung cần hỗ trợ..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
-        st.rerun()
-
-    # AI trả lời dựa trên dữ liệu file của Phát
-    if len(st.session_state.messages) > 0 and st.session_state.messages[-1]["role"] == "user":
+        with st.chat_message("user"): st.markdown(prompt)
         with st.chat_message("assistant"):
-            with st.spinner("Đang lục tìm hồ sơ..."):
-                try:
-                    user_query = st.session_state.messages[-1]["content"]
-                    # Đưa dữ liệu từ file vào Context
-                    context = f"DỮ LIỆU NGHIỆP VỤ CÔNG ĐOÀN:\n{knowledge_data[:10000]}" 
-                    
-                    res = client.chat.completions.create(
-                        messages=[
-                            {"role": "system", "content": f"Bạn là trợ lý AI Công đoàn xã Hòa Khánh. Hãy dùng dữ liệu được cung cấp để hướng dẫn chi tiết quy trình, mẫu đơn cho Anh/Chị {st.session_state.user}. Nếu dữ liệu có mẫu đơn, hãy trích dẫn các mục cần điền."},
-                            {"role": "user", "content": f"{context}\n\nCÂU HỎI: {user_query}"}
-                        ],
-                        model="llama-3.1-8b-instant"
-                    )
-                    ans = res.choices[0].message.content
-                    st.markdown(ans)
-                    st.session_state.messages.append({"role": "assistant", "content": ans})
-                except:
-                    st.error("Lỗi xử lý dữ liệu!")
+            try:
+                res = client.chat.completions.create(
+                    messages=[{"role": "system", "content": f"Bạn là trợ lý AI công đoàn xã Hòa Khánh. Gọi người dùng là Anh/Chị {st.session_state.user}."},
+                              {"role": "user", "content": prompt}],
+                    model="llama-3.1-8b-instant"
+                )
+                ans = res.choices[0].message.content
+                st.markdown(ans)
+                st.session_state.messages.append({"role": "assistant", "content": ans})
+            except: st.error("AI đang bận!")
+
+# --- 5. CHÂN TRANG ---
+st.markdown(f'''
+    <div class="digital-footer">
+        <i class="fas fa-microchip"></i> Dự án Số hóa Công đoàn & Hành chính công<br>
+        Tác giả: <b>Lương Tấn Phát</b> | Xã Hòa Khánh, Tây Ninh
+    </div>
+''', unsafe_allow_html=True)
