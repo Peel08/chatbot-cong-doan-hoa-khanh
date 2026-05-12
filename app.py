@@ -2,10 +2,10 @@ import streamlit as st
 from groq import Groq
 import os
 
-# 1. Cấu hình trang với Logo
-st.set_page_config(page_title="Hòa Khánh Digital AI", page_icon="logo.png", layout="wide")
+# 1. Cấu hình trang với Logo và Icon Robot
+st.set_page_config(page_title="Hòa Khánh Digital AI", page_icon="robot.png", layout="wide")
 
-# 2. CSS SIÊU CÔNG NGHỆ (AI & DIGITAL TRANSFORMATION)
+# 2. CSS SIÊU CÔNG NGHỆ (Nâng cấp thêm hiệu ứng cho Robot)
 st.markdown('''
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
@@ -47,11 +47,21 @@ st.markdown('''
     /* Khung đăng nhập phong cách AI */
     .login-card {
         text-align: center;
-        padding: 40px;
+        padding: 30px;
         background: rgba(255, 255, 255, 0.9);
         border-radius: 30px;
         box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         border: 1px solid #fff;
+    }
+
+    /* Hiệu ứng cho ảnh Robot bay nhẹ */
+    .robot-moving {
+        animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+        100% { transform: translateY(0px); }
     }
 
     /* Tin nhắn chat bo tròn hiện đại */
@@ -86,20 +96,23 @@ else:
 if "logged" not in st.session_state: st.session_state.logged = False
 
 if not st.session_state.logged:
-    # --- MÀN HÌNH CHÀO DIGITAL ---
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    # --- MÀN HÌNH CHÀO DIGITAL VỚI ROBOT ---
+    st.markdown("<br>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns([0.1, 0.8, 0.1])
     with col2:
+        # Chèn Robot ở đây
+        st.markdown('<div style="text-align:center;" class="robot-moving">', unsafe_allow_html=True)
+        st.image("robot.png", width=200) # Gọi file robot.png
+        st.markdown('</div>', unsafe_allow_html=True)
+        
         st.markdown('''
         <div class="login-card">
-            <i class="fas fa-microchip" style="font-size: 50px; color: #004494; margin-bottom: 20px;"></i>
-            <h1 style='color: #004494; font-family: sans-serif;'>HÒA KHÁNH DIGITAL AI</h1>
-            <p style="color: #666;">Hệ thống Trợ lý số phục vụ Công đoàn & Chuyển đổi số cơ sở</p>
-            <p style="font-size: 0.9rem;">Chuyên gia phát triển: <b>Lương Tấn Phát</b></p>
-        </div>
+            <h1 style='color: #004494; font-family: sans-serif; margin-bottom:0;'>HÒA KHÁNH DIGITAL AI</h1>
+            <p style="color: #666; font-weight: bold; margin-bottom: 15px;">Hệ thống Trợ lý số phục vụ Công đoàn & Chuyển đổi số</p>
+            <p style="font-size: 0.9rem; color: #888;">Phát triển bởi: <b>Lương Tấn Phát</b></p>
         ''', unsafe_allow_html=True)
         
-        name = st.text_input("Nhập danh tính Cán bộ/Đoàn viên:")
+        name = st.text_input("Nhập danh tính Cán bộ/Đoàn viên:", placeholder="Ví dụ: Nguyễn Văn A")
         if st.button("KÍCH HOẠT TRỢ LÝ SỐ"):
             if name:
                 st.session_state.user = name
@@ -107,13 +120,17 @@ if not st.session_state.logged:
                 st.rerun()
             else:
                 st.warning("Vui lòng nhập tên để định danh hệ thống!")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 else:
     # --- GIAO DIỆN CHAT AI ---
     with st.sidebar:
+        st.markdown('<div style="text-align:center;" class="robot-moving">', unsafe_allow_html=True)
+        st.image("robot.png", width=100) # Robot nhỏ ở sidebar
+        st.markdown('</div>', unsafe_allow_html=True)
+        
         st.markdown(f'''
             <div style="text-align:center;">
-                <i class="fas fa-user-shield" style="font-size: 40px; color: white; margin-bottom: 15px;"></i>
                 <p class='sidebar-text'>Cán bộ truy cập:<br><b style='font-size:1.2rem; color: #00d4ff;'>{st.session_state.user}</b></p>
             </div>
         ''', unsafe_allow_html=True)
@@ -124,19 +141,19 @@ else:
             st.rerun()
         
         st.markdown(f'''
-            <div style="margin-top: 100px; text-align:center; opacity: 0.8;">
+            <div style="margin-top: 80px; text-align:center; opacity: 0.8;">
                 <i class="fas fa-code" style="color: white; font-size: 15px;"></i>
-                <p class='sidebar-text' style='font-size:0.75rem;'>Phát triển bởi:<br><b>Lương Tấn Phát</b><br>IUH Student</p>
+                <p class='sidebar-text' style='font-size:0.75rem;'>Tác giả: <b>Lương Tấn Phát</b><br>Dự án Chuyển đổi số cơ sở</p>
             </div>
         ''', unsafe_allow_html=True)
 
-    st.markdown(f"<h3 style='color: #004494;'><i class='fas fa-robot'></i> Chào Anh/Chị {st.session_state.user}, Trợ lý AI đã sẵn sàng!</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: #004494;'><i class='fas fa-robot'></i> Chào Anh/Chị {st.session_state.user}, tôi là Trợ lý AI xã Hòa Khánh!</h3>", unsafe_allow_html=True)
 
     if "messages" not in st.session_state: st.session_state.messages = []
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]): st.markdown(msg["content"])
 
-    if prompt := st.chat_input("Nhập câu hỏi về Chuyển đổi số, Công đoàn..."):
+    if prompt := st.chat_input("Nhập nội dung cần hỗ trợ..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
         
@@ -158,7 +175,7 @@ else:
 # --- 5. CHÂN TRANG DIGITAL ---
 st.markdown(f'''
     <div class="digital-footer">
-        <i class="fas fa-project-diagram"></i> Dự án số hóa Công đoàn cơ sở<br>
+        <i class="fas fa-microchip"></i> Dự án Số hóa Công đoàn & Hành chính công<br>
         Tác giả: <b>Lương Tấn Phát</b> | Xã Hòa Khánh, Tây Ninh
     </div>
 ''', unsafe_allow_html=True)
