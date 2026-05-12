@@ -8,7 +8,22 @@ import os
 # --- 1. CẤU HÌNH TRANG ---
 st.set_page_config(page_title="Công đoàn Hòa Khánh AI", page_icon="🇻🇳", layout="wide")
 
-# --- 2. HÀM ĐỌC DỮ LIỆU NỘI BỘ ---
+# --- 2. HÀM PHÂN BIỆT DANH XƯNG ANH/CHỊ (AI CHẠY NGẦM) ---
+def get_gender_title(name, client):
+    try:
+        # AI sẽ phân tích tên để quyết định cách xưng hô lịch sự
+        check_prompt = f"Dựa vào tên '{name}', hãy trả về duy nhất 1 từ là 'Anh' hoặc 'Chị'. Nếu không rõ, trả về 'Quý khách'."
+        response = client.chat.completions.create(
+            messages=[{"role": "user", "content": check_prompt}],
+            model="llama-3.1-8b-instant",
+            max_tokens=10
+        )
+        title = response.choices[0].message.content.strip()
+        return title if title in ["Anh", "Chị"] else "Quý khách"
+    except:
+        return "Quý khách"
+
+# --- 3. HÀM ĐỌC DỮ LIỆU NỘI BỘ TỪ THƯ MỤC DATA ---
 @st.cache_resource
 def load_internal_data():
     combined_text = ""
@@ -28,7 +43,7 @@ def load_internal_data():
             except: pass
     return combined_text
 
-# --- 3. GIAO DIỆN CSS (CHUẨN MOBILE XANH ĐẬM) ---
+# --- 4. GIAO DIỆN CSS CHUẨN MOBILE (XANH ĐẬM CÔNG ĐOÀN) ---
 st.markdown("""
     <style>
     .main { background-color: #ffffff; }
@@ -43,48 +58,58 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. KẾT NỐI GROQ AI ---
-try:
-    if "GROQ_API_KEY" in st.secrets:
-        client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-    else:
-        st.error("❌ Chưa cấu hình GROQ_API_KEY trong Secrets!")
-        st.stop()
-except Exception as e:
-    st.error(f"❌ Lỗi kết nối API: {e}")
+# --- 5. KẾT NỐI API ---
+if "GROQ_API_KEY" in st.secrets:
+    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+else:
+    st.error("Vui lòng cấu hình GROQ_API_KEY trong mục Secrets của Streamlit!")
     st.stop()
 
 internal_knowledge = load_internal_data()
 
-# --- 5. SIDEBAR (THANH BÊN) ---
+# --- 6. SIDEBAR (THANH ĐIỀU HƯỚNG) ---
 with st.sidebar:
     st.image("logo.png", width=180)
     st.markdown("<p class='sidebar-title'>CÔNG ĐOÀN HÒA KHÁNH</p>", unsafe_allow_html=True)
-    if "user_name" not in st.session_state or not st.session_state.user_name:
-        name = st.text_input("Đăng nhập:", placeholder="Nhập tên...")
+    
+    if "user_name" not in st.session_state:
+        name_input = st.text_input("Đăng nhập:", placeholder="Nhập họ tên của bạn...")
         if st.button("🚀 KÍCH HOẠT"):
-            if name: st.session_state.user_name = name; st.rerun()
+            if name_input:
+                st.session_state.user_name = name_input
+                with st.spinner("Đang xác nhận danh xưng..."):
+                    st.session_state.gender_title = get_gender_title(name_input, client)
+                st.rerun()
     else:
-        st.markdown(f'<div class="user-card"><span style="font-size: 0.85rem; opacity: 0.9;">Phiên làm việc của</span><br><span style="font-size: 1.4rem; font-weight: bold;">{st.session_state.user_name}</span></div>', unsafe_allow_html=True)
-        st.markdown("<p style='color: white; text-align: center; font-size: 0.9rem;'>📍 Hòa Khánh, Tây Ninh</p>", unsafe_allow_html=True)
+        title = st.session_state.get("gender_title", "Quý khách")
+        st.markdown(f'''
+            <div class="user-card">
+                <span style="font-size: 0.85rem; opacity: 0.9;">Xin chào {title}</span><br>
+                <span style="font-size: 1.2rem; font-weight: bold;">{st.session_state.user_name}</span>
+            </div>
+        ''', unsafe_allow_html=True)
         if st.button("🗑️ XÓA HỘI THOẠI"):
-            st.session_state.messages = []; st.rerun()
+            st.session_state.messages = []
+            st.rerun()
         st.markdown(f"<p class='author-info'>Thiết kế bởi:<br><b>Lương Tấn Phát</b></p>", unsafe_allow_html=True)
 
-# --- 6. GIAO DIỆN CHAT CHÍNH ---
+# --- 7. GIAO DIỆN CHAT CHÍNH ---
 st.markdown("<h2 style='text-align: center; color: #004494;'>TRỢ LÝ ẢO CÔNG ĐOÀN</h2>", unsafe_allow_html=True)
 
 if "messages" not in st.session_state: st.session_state.messages = []
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]): st.markdown(msg["content"])
 
-if prompt := st.chat_input("Hỏi tôi về chính sách, thủ tục..."):
+if prompt := st.chat_input("Nhập câu hỏi tại đây..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"): st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("⚡ Đang kết hợp dữ liệu và AI..."):
-            # Lấy dữ liệu file (giới hạn để không quá tải)
+        with st.spinner("⚡ Đang xử lý dữ liệu..."):
+            title = st.session_state.get("gender_title", "Quý khách")
+            user_name = st.session_state.get("user_name", "")
+            
+            # Giới hạn dữ liệu file để AI xử lý tối ưu
             context = f"DỮ LIỆU NỘI BỘ XÃ HÒA KHÁNH:\n{internal_knowledge[:8000]}\n\n"
             
             try:
@@ -92,21 +117,21 @@ if prompt := st.chat_input("Hỏi tôi về chính sách, thủ tục..."):
                     messages=[
                         {
                             "role": "system", 
-                            "content": f"""Bạn là Trợ lý ảo AI của Công đoàn xã Hòa Khánh.
-                            HƯỚNG DẪN TRẢ LỜI:
-                            1. Ưu tiên sử dụng 'DỮ LIỆU NỘI BỘ XÃ HÒA KHÁNH' để trả lời chính xác các câu hỏi về quy định, thủ tục tại địa phương.
-                            2. Nếu thông tin không có trong file nội bộ, hãy sử dụng KIẾN THỨC AI sâu rộng của bạn để tư vấn và giải thích thêm cho người dùng.
-                            3. Luôn giữ thái độ thân thiện, lịch sự và xưng hô phù hợp với {st.session_state.user_name}. Trả lời bằng tiếng Việt chuyên nghiệp."""
+                            "content": f"""Bạn là Trợ lý AI chuyên nghiệp của Công đoàn Hòa Khánh.
+                            QUY TẮC PHỤC VỤ:
+                            1. Xưng là 'Trợ lý' và gọi người dùng là '{title} {user_name}'.
+                            2. Thái độ: Lịch sự, chuẩn mực cán bộ công sở, tận tâm hỗ trợ cộng đồng.
+                            3. Cách trả lời: Ưu tiên dữ liệu từ file nội bộ. Nếu không có, hãy dùng kiến thức AI để tư vấn thêm một cách chu đáo nhất."""
                         },
                         {"role": "user", "content": f"{context} CÂU HỎI: {prompt}"}
                     ],
-                    model="llama-3.1-8b-instant", # Model mới nhất, tốc độ tức thì
+                    model="llama-3.1-8b-instant",
                 )
                 ans = chat_completion.choices[0].message.content
                 st.markdown(ans)
                 st.session_state.messages.append({"role": "assistant", "content": ans})
             except Exception as e:
-                st.error(f"❌ Lỗi xử lý AI: {str(e)}")
+                st.error("Hệ thống đang bận phục vụ nhiều người dùng, vui lòng hỏi lại sau giây lát.")
 
-# --- 7. FOOTER (CHÂN TRANG) ---
-st.markdown(f'<div class="author-footer">Xây dựng bởi <b>Lương Tấn Phát</b><br>© 2026 Công đoàn Hòa Khánh, Tây Ninh</div>', unsafe_allow_html=True)
+# --- 8. CHÂN TRANG ---
+st.markdown(f'<div class="author-footer">Xây dựng và vận hành bởi <b>Lương Tấn Phát</b><br>© 2026 Công đoàn Hòa Khánh, Tây Ninh</div>', unsafe_allow_html=True)
