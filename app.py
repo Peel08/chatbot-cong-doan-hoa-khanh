@@ -93,9 +93,9 @@ if not st.session_state.logged:
         st.markdown('''
         <div class="login-card">
             <i class="fas fa-microchip" style="font-size: 50px; color: #004494; margin-bottom: 20px;"></i>
-            <h1 style='color: #004494; font-family: sans-serif;'>CÔNG ĐOÀN SỐ - XÃ HÒA KHÁNH - TỈNH TÂY NINH</h1>
+            <h1 style='color: #004494; font-family: sans-serif;'>CÔNG ĐOÀN SỐ - XÃ HÒA KHÁNH - TÂY NINH</h1>
             <p style="color: #666;">Hệ thống Trợ lý số phục vụ Công đoàn & Chuyển đổi số cơ sở</p>
-            <p style="font-size: 0.9rem;">Chuyên gia phát triển: <b>Lương Tấn Phát</b></p>
+            <p style="font-size: 0.9rem;">Xây dựng và phát triển: <b>Lương Tấn Phát</b></p>
         </div>
         ''', unsafe_allow_html=True)
         
