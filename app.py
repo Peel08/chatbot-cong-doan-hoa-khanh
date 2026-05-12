@@ -3,7 +3,7 @@ from groq import Groq
 import os
 
 # 1. Cấu hình trang với Logo và Icon Robot
-st.set_page_config(page_title="CÔNG ĐOÀN SỐ XÃ HÒA KHÁNH", page_icon="robot.png", layout="wide")
+st.set_page_config(page_title="CÔNG ĐOÀN SỐ XÃ HÒA KHÁNH", page_icon="logo.png", layout="wide")
 
 # 2. CSS SIÊU CÔNG NGHỆ (Nâng cấp thêm hiệu ứng cho Robot)
 st.markdown('''
