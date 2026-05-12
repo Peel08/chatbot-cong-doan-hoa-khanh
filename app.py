@@ -86,7 +86,7 @@ else:
     # --- GIAO DIỆN CHAT (SAU KHI ĐĂNG NHẬP) ---
     with st.sidebar:
         st.image("logo.png", width=120)
-        st.markdown(f"<div class='sidebar-text'>Đang phục vụ:<br><b>{st.session_state.user_name}</b></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='sidebar-text'>Xin chào anh/chị:<br><b>{st.session_state.user_name}</b></div>", unsafe_allow_html=True)
         if st.button("🗑️ XÓA CHAT"):
             st.session_state.messages = []
             st.rerun()
