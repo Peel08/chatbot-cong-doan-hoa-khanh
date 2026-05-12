@@ -43,7 +43,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. KẾT NỐI API ---
+# --- 4. KẾT NỐI API GROQ ---
 if "GROQ_API_KEY" in st.secrets:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 else:
@@ -87,33 +87,34 @@ if prompt := st.chat_input("Nhập câu hỏi tại đây..."):
     with st.chat_message("user"): st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("⚡ Đang tra cứu..."):
+        with st.spinner("⚡ Đang tra cứu dữ liệu..."):
             user_name = st.session_state.get("user_name", "")
-            context = f"DỮ LIỆU NỘI BỘ XÃ HÒA KHÁNH:\n{internal_knowledge[:8000]}\n\n"
+            # Lấy dữ liệu file (giới hạn để AI không bị loạn thông tin)
+            context = f"DỮ LIỆU NỘI BỘ CÔNG ĐOÀN XÃ HÒA KHÁNH:\n{internal_knowledge[:8000]}\n\n"
             
             try:
                 chat_completion = client.chat.completions.create(
                     messages=[
                         {
                             "role": "system", 
-                            # Tìm và thay thế đoạn content của system như sau:
-"content": f"""Bạn là Trợ lý AI chính thức của Công đoàn xã Hòa Khánh.
-QUY TẮC PHẠM VI HỖ TRỢ:
-1. Bạn đại diện cho CÔNG ĐOÀN XÃ HÒA KHÁNH, không phải một chi bộ hay ấp riêng lẻ nào.
-2. Tuyệt đối không tự giới hạn mình vào 'Chi bộ Ấp Hóc Thơm 1' hay bất kỳ đơn vị nhỏ nào khác, trừ khi người dùng hỏi đích danh về đơn vị đó.
-3. Luôn gọi người dùng là 'Anh/Chị' hoặc 'Anh/Chị {user_name}'. Không dùng các từ xưng hô khác.
-4. Trả lời ngắn gọn, đúng trọng tâm. Nếu người dùng chào, hãy chào lại: 'Trợ lý Công đoàn xã Hòa Khánh xin chào Anh/Chị {user_name}, tôi có thể giúp gì cho Anh/Chị?'."""
-                            5. Chỉ dùng dữ liệu nội bộ để trả lời khi câu hỏi liên quan trực tiếp đến tài liệu đó."""
+                            "content": f"""Bạn là Trợ lý AI chính thức của CÔNG ĐOÀN XÃ HÒA KHÁNH.
+                            QUY TẮC CỐ ĐỊNH:
+                            1. Bạn đại diện cho cấp CÔNG ĐOÀN XÃ HÒA KHÁNH. Không được tự nhận là Chi bộ ấp hay đơn vị nhỏ hơn trừ khi có câu hỏi cụ thể về ấp đó.
+                            2. LUÔN LUÔN gọi người dùng là 'Anh/Chị' hoặc 'Anh/Chị {user_name}'. 
+                            3. TUYỆT ĐỐI KHÔNG tự ý liệt kê, tóm tắt nội dung file khi người dùng chỉ chào hỏi xã giao.
+                            4. Xưng là 'Trợ lý'. KHÔNG dùng các từ: 'Quý khách', 'Bác', 'Chú', 'Cô', 'Gì', 'Bạn', 'Em'.
+                            5. Nếu người dùng chào, hãy phản hồi: 'Trợ lý Công đoàn xã Hòa Khánh xin chào Anh/Chị {user_name}. Tôi có thể giúp gì cho Anh/Chị về công tác Công đoàn ạ?'."""
                         },
                         {"role": "user", "content": f"{context} Câu hỏi từ Anh/Chị {user_name}: {prompt}"}
                     ],
                     model="llama-3.1-8b-instant",
+                    temperature=0.3 # Giữ độ chính xác cao
                 )
                 ans = chat_completion.choices[0].message.content
                 st.markdown(ans)
                 st.session_state.messages.append({"role": "assistant", "content": ans})
             except Exception as e:
-                st.error("Hệ thống bận, vui lòng hỏi lại sau.")
+                st.error("Hệ thống bận, Anh/Chị vui lòng thử lại sau giây lát.")
 
 # --- 7. CHÂN TRANG ---
-st.markdown(f'<div class="author-footer">Xây dựng và vận hành bởi <b>Lương Tấn Phát</b><br>© 2026 Công đoàn Hòa Khánh, Tây Ninh</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="author-footer">Xây dựng và vận hành bởi <b>Lương Tấn Phát</b><br>© 2026 Công đoàn xã Hòa Khánh, Tây Ninh</div>', unsafe_allow_html=True)
