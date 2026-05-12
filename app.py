@@ -3,7 +3,7 @@ from groq import Groq
 import os
 
 # 1. Cấu hình trang
-st.set_page_config(page_title="Hòa Khánh Digital AI", page_icon="robot.png", layout="wide")
+st.set_page_config(page_title="Hòa Khánh Digital AI", page_icon="logo.png", layout="wide")
 
 # 2. CSS Siêu Công Nghệ & Căn giữa Sidebar
 st.markdown('''
@@ -20,6 +20,7 @@ st.markdown('''
         border-right: 1px solid rgba(255,255,255,0.1);
     }
     
+    /* Ép tất cả thành phần trong Sidebar ra giữa */
     [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
         align-items: center !important;
         justify-content: center !important;
@@ -49,24 +50,14 @@ st.markdown('''
         box-shadow: 0 6px 20px rgba(0, 82, 212, 0.6);
     }
 
-    /* Khung đăng nhập AI - Căn chỉnh lại để đồng bộ với Robot */
-    .login-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-    }
-
+    /* Khung đăng nhập AI */
     .login-card {
         text-align: center;
         padding: 30px;
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(255, 255, 255, 0.9);
         border-radius: 30px;
         box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         border: 1px solid #fff;
-        width: 100%;
-        max-width: 500px; /* Khống chế độ rộng để đẹp trên máy tính */
     }
 
     /* Hiệu ứng Robot bay */
@@ -75,7 +66,6 @@ st.markdown('''
         display: flex;
         justify-content: center;
         width: 100%;
-        margin-bottom: 20px;
     }
     @keyframes float {
         0% { transform: translateY(0px); }
@@ -108,46 +98,35 @@ else:
 if "logged" not in st.session_state: st.session_state.logged = False
 
 if not st.session_state.logged:
-    # --- MÀN HÌNH CHÀO CĂN GIỮA TUYỆT ĐỐI ---
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([0.15, 0.7, 0.15])
-    
+    # --- MÀN HÌNH CHÀO ---
+    st.markdown("<br>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([0.1, 0.8, 0.1])
     with col2:
-        # Bọc mọi thứ trong wrapper để ép vào giữa
-        st.markdown('<div class="login-wrapper">', unsafe_allow_html=True)
-        
-        # 1. Robot nằm trên (Căn giữa)
         st.markdown('<div class="robot-moving">', unsafe_allow_html=True)
         st.image("robot.png", width=200)
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # 2. Card đăng nhập nằm dưới (Căn giữa)
         st.markdown('''
         <div class="login-card">
             <h1 style='color: #004494; font-family: sans-serif; margin-bottom:0;'>HÒA KHÁNH DIGITAL AI</h1>
             <p style="color: #666; font-weight: bold; margin-bottom: 15px;">Hệ thống Trợ lý số phục vụ Công đoàn & Chuyển đổi số</p>
+            <p style="font-size: 0.9rem; color: #888;">Phát triển bởi: <b>Lương Tấn Phát</b></p>
         ''', unsafe_allow_html=True)
         
-        name = st.text_input("Nhập danh tính Cán bộ/Đoàn viên:", placeholder="Ví dụ: Nguyễn Thị Lan", label_visibility="collapsed")
-        
-        if st.button("🚀 KÍCH HOẠT HỆ THỐNG"):
+        name = st.text_input("Nhập danh tính Cán bộ/Đoàn viên:", placeholder="Ví dụ: Nguyễn Thị Lan")
+        if st.button("KÍCH HOẠT TRỢ LÝ SỐ"):
             if name:
                 st.session_state.user = name
                 st.session_state.logged = True
                 st.rerun()
             else:
                 st.warning("Vui lòng nhập tên!")
-                
-        st.markdown(f'''
-            <p style="font-size: 0.9rem; color: #888; margin-top: 15px;">Phát triển bởi: <b>Lương Tấn Phát</b></p>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        st.markdown('</div>', unsafe_allow_html=True) # Đóng login-wrapper
+        st.markdown('</div>', unsafe_allow_html=True)
 
 else:
     # --- GIAO DIỆN CHAT AI ---
     with st.sidebar:
+        # Toàn bộ nội dung Sidebar được bọc để căn giữa
         st.markdown('<div style="text-align: center; width: 100%;">', unsafe_allow_html=True)
         
         st.markdown('<div class="robot-moving">', unsafe_allow_html=True)
