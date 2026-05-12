@@ -75,46 +75,67 @@ with st.sidebar:
             st.rerun()
         st.markdown(f"<p class='author-info'>Thiết kế bởi:<br><b>Lương Tấn Phát</b></p>", unsafe_allow_html=True)
 
-# --- 6. GIAO DIỆN CHAT CHÍNH ---
-st.markdown("<h2 style='text-align: center; color: #004494;'>TRỢ LÝ ẢO CÔNG ĐOÀN</h2>", unsafe_allow_html=True)
+# --- 6. LOGIC PHÂN CHIA MÀN HÌNH ---
 
-if "messages" not in st.session_state: st.session_state.messages = []
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]): st.markdown(msg["content"])
+# Kiểm tra xem người dùng đã đăng nhập chưa
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 
-if prompt := st.chat_input("Nhập câu hỏi tại đây..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"): st.markdown(prompt)
+if not st.session_state.logged_in:
+    # --- GIAO DIỆN MÀN HÌNH CHÀO / ĐĂNG NHẬP ---
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.image("logo.png", width=120) # Đảm bảo file logo.png có trên GitHub
+    st.markdown("<h2 style='text-align: center; color: #004494;'>CHÀO MỪNG ANH/CHỊ</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #666;'>Vui lòng xác nhận danh tính để bắt đầu</p>", unsafe_allow_html=True)
+    
+    with st.container():
+        col1, col2, col3 = st.columns([1,2,1])
+        with col2:
+            name_input = st.text_input("Họ và tên của Anh/Chị:", placeholder="Nhập tên tại đây...")
+            if st.button("🚀 BẮT ĐẦU SỬ DỤNG"):
+                if name_input:
+                    st.session_state.user_name = name_input
+                    st.session_state.logged_in = True
+                    st.rerun()
+                else:
+                    st.warning("Anh/Chị vui lòng nhập tên để tiếp tục!")
+else:
+    # --- GIAO DIỆN TRÒ CHUYỆN (SAU KHI ĐĂNG NHẬP) ---
+    st.markdown(f"<h3 style='text-align: center; color: #004494;'>TRỢ LÝ CÔNG ĐOÀN HÒA KHÁNH</h3>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align: center; font-size: 0.9rem;'>Chào Anh/Chị: <b>{st.session_state.user_name}</b></p>", unsafe_allow_html=True)
+    st.markdown("---")
 
-    with st.chat_message("assistant"):
-        with st.spinner("⚡ Đang tra cứu dữ liệu..."):
-            user_name = st.session_state.get("user_name", "")
-            # Lấy dữ liệu file (giới hạn để AI không bị loạn thông tin)
-            context = f"DỮ LIỆU NỘI BỘ CÔNG ĐOÀN XÃ HÒA KHÁNH:\n{internal_knowledge[:8000]}\n\n"
-            
-            try:
-                chat_completion = client.chat.completions.create(
-                    messages=[
-                        {
-                            "role": "system", 
-                            "content": f"""Bạn là Trợ lý AI chính thức của CÔNG ĐOÀN XÃ HÒA KHÁNH.
-                            QUY TẮC CỐ ĐỊNH:
-                            1. Bạn đại diện cho cấp CÔNG ĐOÀN XÃ HÒA KHÁNH. Không được tự nhận là Chi bộ ấp hay đơn vị nhỏ hơn trừ khi có câu hỏi cụ thể về ấp đó.
-                            2. LUÔN LUÔN gọi người dùng là 'Anh/Chị' hoặc 'Anh/Chị {user_name}'. 
-                            3. TUYỆT ĐỐI KHÔNG tự ý liệt kê, tóm tắt nội dung file khi người dùng chỉ chào hỏi xã giao.
-                            4. Xưng là 'Trợ lý'. KHÔNG dùng các từ: 'Quý khách', 'Bác', 'Chú', 'Cô', 'Gì', 'Bạn', 'Em'.
-                            5. Nếu người dùng chào, hãy phản hồi: 'Trợ lý Công đoàn xã Hòa Khánh xin chào Anh/Chị {user_name}. Tôi có thể giúp gì cho Anh/Chị về công tác Công đoàn ạ?'."""
-                        },
-                        {"role": "user", "content": f"{context} Câu hỏi từ Anh/Chị {user_name}: {prompt}"}
-                    ],
-                    model="llama-3.1-8b-instant",
-                    temperature=0.3 # Giữ độ chính xác cao
-                )
-                ans = chat_completion.choices[0].message.content
-                st.markdown(ans)
-                st.session_state.messages.append({"role": "assistant", "content": ans})
-            except Exception as e:
-                st.error("Hệ thống bận, Anh/Chị vui lòng thử lại sau giây lát.")
+    if "messages" not in st.session_state: st.session_state.messages = []
+    
+    # Hiển thị lịch sử chat
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]): 
+            st.markdown(msg["content"])
+
+    # Ô nhập nội dung chat
+    if prompt := st.chat_input("Hỏi tôi về chính sách, thủ tục..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"): st.markdown(prompt)
+
+        with st.chat_message("assistant"):
+            with st.spinner("⚡ Đang tra cứu..."):
+                user_name = st.session_state.user_name
+                context = f"DỮ LIỆU NỘI BỘ XÃ HÒA KHÁNH:\n{internal_knowledge[:8000]}\n\n"
+                
+                try:
+                    chat_completion = client.chat.completions.create(
+                        messages=[
+                            {"role": "system", "content": f"Bạn là Trợ lý AI Công đoàn xã Hòa Khánh. Luôn gọi người dùng là Anh/Chị {user_name}. Không dùng từ Quý khách, Bác, Chú. Trả lời lịch sự, đúng trọng tâm."},
+                            {"role": "user", "content": f"{context} CÂU HỎI: {prompt}"}
+                        ],
+                        model="llama-3.1-8b-instant",
+                    )
+                    ans = chat_completion.choices[0].message.content
+                    st.markdown(ans)
+                    st.session_state.messages.append({"role": "assistant", "content": ans})
+                except Exception as e:
+                    st.error("Hệ thống bận, Anh/Chị vui lòng thử lại sau.")
 
 # --- 7. CHÂN TRANG ---
+st.markdown(f'<div class="author-footer">Xây dựng bởi <b>Lương Tấn Phát</b><br>© 2026 Công đoàn Hòa Khánh, Tây Ninh</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="author-footer">Xây dựng và vận hành bởi <b>Lương Tấn Phát</b><br>© 2026 Công đoàn xã Hòa Khánh, Tây Ninh</div>', unsafe_allow_html=True)
