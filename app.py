@@ -122,7 +122,7 @@ if not st.session_state.logged:
             <div style="text-align:center;">
                 <img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="160" style="filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));">
             </div>
-            <h2 style="text-align:center; color:#004494; font-weight:800; margin-top:12px;">HÒA KHÁNH DIGITAL AI</h2>
+            <h2 style="text-align:center; color:#004494; font-weight:800; margin-top:12px;">TRỢ LÝ ẢO CÔNG ĐOÀN XÃ HÒA KHÁNH</h2>
             <p style="text-align:center; color:#666; margin-bottom:25px;">Trợ lý thông minh số hóa công tác Công đoàn</p>
         ''', unsafe_allow_html=True)
         
