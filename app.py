@@ -88,7 +88,7 @@ if "show_report_form" not in st.session_state: st.session_state.show_report_form
 CHU_TICH_INFO = """
 Thông tin về Chủ tịch Công đoàn cơ sở xã Hòa Khánh:
 - Họ và tên: Nguyễn Thanh Toàn
-- Chức vụ: Chủ tịch Công đoàn xã Hòa Khánh.
+- Chức vụ: Phó Chủ tịch Ủy ban MTTQ xã đồng thời là Chủ tịch Công đoàn xã Hòa Khánh.
 - Địa điểm làm việc: số 779, QUốc lộ N2, xã hòa khánh, tỉnh Tây Ninh - UBND xã Hòa Khánh.
 - Số điện thoại liên hệ: 0797627616
 - Email: thanhtoan26091992@gmail.com
