@@ -7,56 +7,55 @@ st.set_page_config(
     page_title="Hòa Khánh Digital AI", 
     page_icon="🤖", 
     layout="wide",
-    initial_sidebar_state="auto" # Để hệ thống tự nhận diện thiết bị
+    initial_sidebar_state="expanded" 
 )
 
-# --- 2. CSS TÙY CHỈNH NÚT SIDEBAR CHO ĐIỆN THOẠI ---
+# --- 2. CSS "ÉP" HIỆN NÚT MENU TRÊN ĐIỆN THOẠI ---
 st.markdown('''
 <style>
-    /* Nền ứng dụng */
+    /* Nền tổng thể */
     .stApp {
         background: radial-gradient(circle at 50% 50%, #fdfbfb 0%, #ebedee 100%);
     }
 
-    /* 1. BIẾN NÚT MỞ SIDEBAR (DẤU >) THÀNH NÚT MENU TO RÕ */
+    /* ÉP HIỆN NÚT SIDEBAR TRÊN MOBILE VÀ ĐỔI MÀU CHO RÕ */
+    /* Đoạn này sẽ biến cái nút vốn bị ẩn thành một nút xanh nổi bật */
     [data-testid="stSidebarCollapsedControl"] {
-        background-color: #0047AB !important; /* Màu xanh đậm */
-        color: white !important;
-        border-radius: 0 10px 10px 0 !important;
-        width: 50px !important;
-        height: 50px !important;
         display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.2) !important;
+        visibility: visible !important;
+        background-color: #0047AB !important; /* Màu xanh đậm */
+        border-radius: 0 10px 10px 0 !important;
+        left: 0 !important;
         top: 10px !important;
+        width: 60px !important;
+        height: 45px !important;
+        z-index: 999999 !important;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.2) !important;
     }
     
-    /* Làm cho biểu tượng bên trong nút Menu màu trắng */
+    /* Làm cho biểu tượng mũi tên/menu bên trong màu trắng to rõ */
     [data-testid="stSidebarCollapsedControl"] svg {
         fill: white !important;
-        width: 30px !important;
-        height: 30px !important;
+        color: white !important;
+        width: 35px !important;
+        height: 35px !important;
     }
 
-    /* 2. STYLE NÚT KÍCH HOẠT (CHỮ TRẮNG RÕ NÉT) */
+    /* Style Sidebar */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #002B5B 0%, #001524 100%) !important;
+    }
+
+    /* Style cho các nút Nhiệm vụ nhanh trong Sidebar */
     div.stButton > button {
         background: linear-gradient(90deg, #0047AB 0%, #0072ff 100%) !important;
         color: white !important;
         font-weight: 800 !important;
-        font-size: 1.1rem !important;
-        text-transform: uppercase !important;
-        border: none !important;
         border-radius: 12px !important;
-        padding: 10px 20px !important;
+        border: none !important;
         width: 100% !important;
         opacity: 1 !important;
-        box-shadow: 0 4px 12px rgba(0, 71, 171, 0.3) !important;
-    }
-
-    /* Tùy chỉnh Sidebar */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #002B5B 0%, #001524 100%) !important;
+        text-transform: uppercase !important;
     }
 
     .gradient-text {
@@ -74,7 +73,7 @@ st.markdown('''
 if "GROQ_API_KEY" in st.secrets:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 else:
-    st.error("⚠️ Thiếu API Key trong Secrets!")
+    st.error("⚠️ Thiếu API Key!")
     st.stop()
 
 if "messages" not in st.session_state: st.session_state.messages = []
@@ -88,7 +87,7 @@ if not st.session_state.logged:
     st.markdown("<br><br><br>", unsafe_allow_html=True)
     _, col2, _ = st.columns([1, 1.5, 1])
     with col2:
-        st.markdown('<div style="text-align:center;"><img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="150" style="animation: float 3s ease-in-out infinite;"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="text-align:center;"><img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="150"></div>', unsafe_allow_html=True)
         st.markdown("<h2 style='text-align:center; color:#004494;'>HÒA KHÁNH DIGITAL AI</h2>", unsafe_allow_html=True)
         name = st.text_input("👤 Định danh của bạn:", placeholder="Nhập tên...")
         if st.button("🚀 KÍCH HOẠT HỆ THỐNG"):
@@ -104,7 +103,7 @@ else:
             <div style="text-align:center; padding:10px;">
                 <img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="80">
                 <h3 style="color:white; margin-bottom:0;">{st.session_state.user}</h3>
-                <p style="color:#00d4ff; font-size:0.8rem;">Cán bộ đang truy cập</p>
+                <p style="color:#00d4ff; font-size:0.8rem;">Cán bộ đang trực tuyến</p>
             </div>
             <hr style="opacity:0.2;">
         ''', unsafe_allow_html=True)
