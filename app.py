@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # --- 2. DÁN URL GOOGLE SCRIPT MỚI CỦA ANH VÀO ĐÂY ---
-WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzaBFI6oxBjtn-m6wqVfiuHQb79cVXyannNpACaPF4WtaRxoaeegXCIkGoJWzR5c974Kw/exec"
+WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzsJ36a3v3noZ3cg6qOV55hII63cxGnFvKwLGhbN48uHFqIE8-be9suukzihFRpl_Kzeg/exec"
 
 # --- 3. CSS SIÊU CÔNG NGHỆ (TỐI ƯU MOBILE 100%) ---
 st.markdown('''
@@ -43,13 +43,22 @@ st.markdown('''
         font-size: 1.5rem;
     }
 
-    /* Khung Form nhập phản ánh */
+    /* Khung Form nhập dữ liệu */
     .report-box {
         background-color: white;
         padding: 20px;
         border-radius: 15px;
         border-left: 5px solid #0047AB;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+    }
+    
+    .danger-box {
+        background-color: #fff5f5;
+        padding: 20px;
+        border-radius: 15px;
+        border-left: 5px solid #e53e3e;
+        box-shadow: 0 4px 12px rgba(229,62,62,0.05);
         margin-bottom: 20px;
     }
 
@@ -81,24 +90,23 @@ else:
 
 if "messages" not in st.session_state: st.session_state.messages = []
 if "logged" not in st.session_state: st.session_state.logged = False
-if "show_report_form" not in st.session_state: st.session_state.show_report_form = False
+if "form_type" not in st.session_state: st.session_state.form_type = None  # None, "phan_anh", hoặc "ho_tro"
 
 # --- THÔNG TIN CHỦ TỊCH CÔNG ĐOÀN XÃ HÒA KHÁNH ---
-# Anh Phát hãy chỉnh sửa lại thông tin thực tế của Chủ tịch ở đây nhé:
 CHU_TICH_INFO = """
 Thông tin về Chủ tịch Công đoàn cơ sở xã Hòa Khánh:
-- Họ và tên: Nguyễn Thanh Toàn
-- Chức vụ: Phó Chủ tịch Ủy ban MTTQ xã đồng thời là Chủ tịch Công đoàn xã Hòa Khánh.
-- Địa điểm làm việc: số 779, QUốc lộ N2, xã hòa khánh, tỉnh Tây Ninh - UBND xã Hòa Khánh.
-- Số điện thoại liên hệ: 0797627616
-- Email: thanhtoan26091992@gmail.com
+- Họ và tên: [Điền tên Chủ tịch vào đây]
+- Chức vụ: Chủ tịch Công đoàn cơ sở xã Hòa Khánh.
+- Địa điểm làm việc: Phòng làm việc khối Đoàn thể - UBND xã Hòa Khánh.
+- Số điện thoại liên hệ: [Điền SĐT Chủ tịch vào đây]
+- Email: [Điền Email Chủ tịch vào đây]
 - Nhiệm vụ: Chịu trách nhiệm chỉ đạo điều hành toàn bộ hoạt động bảo vệ quyền, lợi ích hợp pháp chính đáng của đoàn viên và người lao động trên địa bàn xã.
 """
 
 # Cơ sở tri thức bất biến về tác giả hệ thống để huấn luyện AI
 AUTHOR_INFO = """
 Hệ thống Hòa Khánh Digital AI được thiết kế, xây dựng và phát triển hoàn toàn bởi Lương Tấn Phát. 
-Đây là giải pháp công nghệ số hóa tiên phong nhằm phục vụ công tác điều hành, quản lý nghiệp vụ Công đoàn và phong tào Thanh niên tại cơ sở xã Hòa Khánh vào năm 2026.
+Đây là giải pháp công nghệ số hóa tiên phong nhằm phục vụ công tác điều hành, quản lý nghiệp vụ Công đoàn và phong trào Thanh niên tại cơ sở xã Hòa Khánh vào năm 2026.
 Mọi vấn đề liên quan đến bản quyền công nghệ, vận hành kỹ thuật và cơ sở dữ liệu đều do nhà phát triển Lương Tấn Phát chịu trách nhiệm.
 """
 
@@ -144,53 +152,74 @@ else:
     col_1, col_2 = st.columns(2)
     with col_1:
         if st.button("📩 GỬI PHẢN ÁNH"):
-            st.session_state.show_report_form = True  # Mở form nhập phản ánh
+            st.session_state.form_type = "phan_anh"  # Mở form phản ánh
             st.rerun()
         if st.button("📝 ĐĂNG KÝ"):
-            st.session_state.show_report_form = False
+            st.session_state.form_type = None
             add_message("user", "Cho tôi hỏi thủ tục đăng ký tham gia tổ chức công đoàn.")
             st.rerun()
             
     with col_2:
-        if st.button("🆘 HỖ TRỢ"):
-            st.session_state.show_report_form = False
-            add_message("user", "Hướng dẫn tôi cách yêu cầu hỗ trợ kỹ thuật hoặc giải đáp nghiệp vụ.")
+        if st.button("🆘 HỖ TRỢ KHÓ KHĂN"):
+            st.session_state.form_type = "ho_tro"  # Mở form hỗ trợ khó khăn (MỚI)
             st.rerun()
         if st.button("🗑️ LÀM MỚI CHAT"):
             st.session_state.messages = []
-            st.session_state.show_report_form = False
+            st.session_state.form_type = None
             st.rerun()
 
     st.markdown("---")
 
-    # --- ĐOẠN HIỂN THỊ FORM NHẬP SỐ ĐIỆN THOẠI & NỘI DUNG (KHI BẤM NÚT) ---
-    if st.session_state.show_report_form:
+    # --- 6.1 FORM NHẬP PHẢN ÁNH KIẾN NGHỊ ---
+    if st.session_state.form_type == "phan_anh":
         st.markdown('<div class="report-box">', unsafe_allow_html=True)
-        st.markdown("<b style='color:#0047AB;'>🏛️ HỆ THỐNG TIẾP NHẬN PHẢN ÁNH KIẾN NGHỊ</b>", unsafe_allow_html=True)
-        
+        st.markdown("<b style='color:#0047AB;'>🏛️ TIẾP NHẬN PHẢN ÁNH KIẾN NGHỊ Đoàn viên</b>", unsafe_allow_html=True)
         with st.form("form_phan_anh", clear_on_submit=True):
-            phone_input = st.text_input("📞 Nhập số điện thoại của Anh/Chị:", placeholder="Ví dụ: 0912345xxx")
-            content_input = st.text_area("📝 Nội dung phản ánh kiến nghị:", placeholder="Nhập chi tiết nội dung muốn gửi đến Chủ tịch Công đoàn...")
-            submit_button = st.form_submit_button("🚀 XÁC NHẬN GỬI CHO CHỦ TỊCH")
+            phone_input = st.text_input("📞 Số điện thoại liên hệ:", placeholder="Nhập số điện thoại...")
+            content_input = st.text_area("📝 Nội dung phản ánh kiến nghị:", placeholder="Nhập chi tiết ý kiến ý kiến muốn gửi lên Ban chấp hành...")
+            submit_button = st.form_submit_button("🚀 GỬI BÁO CÁO PHẢN ÁNH")
             
             if submit_button:
                 if not phone_input or not content_input:
-                    st.error("⚠️ Vui lòng điền đầy đủ cả Số điện thoại và Nội dung phản ánh!")
+                    st.error("⚠️ Vui lòng điền đầy đủ thông tin yêu cầu!")
                 else:
-                    with st.status("🚀 Hệ thống đang gửi dữ liệu bảo mật về trang quản trị..."):
+                    with st.status("🚀 Đang chuyển dữ liệu về trang quản trị..."):
                         try:
-                            # Đẩy dữ liệu sang Google Sheets (bao gồm Tên, SĐT, Nội dung)
                             requests.post(WEBHOOK_URL, json={
-                                "user": st.session_state.user, 
-                                "phone": phone_input, 
-                                "content": content_input
+                                "user": st.session_state.user, "phone": phone_input, "content": content_input, "type": "Phản ánh kiến nghị"
                             })
-                            res_text = f"✅ Gửi phản ánh thành công! Nội dung và số điện thoại ({phone_input}) của Anh/Chị {st.session_state.user} đã được chuyển đến trang quản trị của Chủ tịch Công đoàn xã. (Hệ thống số hóa phát triển bởi Lương Tấn Phát)"
+                            res_text = f"✅ Đã ghi nhận thành công! Ý kiến phản ánh của Anh/Chị {st.session_state.user} (SĐT: {phone_input}) đã được chuyển thẳng tới Chủ tịch Công đoàn xã. (Phát triển bởi Lương Tấn Phát)"
                         except:
-                            res_text = "❌ Gửi phản ánh thất bại. Anh Phát vui lòng kiểm tra lại link Web App URL."
-                    
+                            res_text = "❌ Gửi thất bại. Anh Phát kiểm tra lại link Web App URL."
                     add_message("assistant", res_text)
-                    st.session_state.show_report_form = False # Đóng form sau khi gửi thành công
+                    st.session_state.form_type = None
+                    st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # --- 6.2 FORM TIẾP NHẬN HỖ TRỢ KHÓ KHĂN (TÍNH NĂNG MỚI ĐƯỢC PHÁT TRIỂN) ---
+    if st.session_state.form_type == "ho_tro":
+        st.markdown('<div class="danger-box">', unsafe_allow_html=True)
+        st.markdown("<b style='color:#e53e3e;'>🆘 KHẢO SÁT TIẾP NHẬN ĐOÀN VIÊN CÓ HOÀN CẢNH KHÓ KHĂN</b>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:0.85rem; color:#666;'>Hệ thống hỗ trợ Công đoàn xã tiếp nhận thông tin trường hợp bị tai nạn lao động, bệnh hiểm nghèo, thiên tai hoặc hoạn nạn khẩn cấp.</p>", unsafe_allow_html=True)
+        with st.form("form_ho_tro_kho_khan", clear_on_submit=True):
+            phone_input = st.text_input("📞 Số điện thoại người cần hỗ trợ:", placeholder="Nhập số điện thoại để Công đoàn liên hệ...")
+            content_input = st.text_area("🏥 Trình bày hoàn cảnh khó khăn đề xuất hỗ trợ:", placeholder="Ví dụ: Đoàn viên bị tai nạn, đau ốm nằm viện, gia đình gặp sự cố, cần hỗ trợ nhu yếu phẩm khẩn cấp...")
+            submit_button = st.form_submit_button("🚨 GỬI YÊU CẦU CỨU TRỢ KHẨN CẤP")
+            
+            if submit_button:
+                if not phone_input or not content_input:
+                    st.error("⚠️ Vui lòng cung cấp số điện thoại và mô tả rõ hoàn cảnh khó khăn để Công đoàn xét duyệt!")
+                else:
+                    with st.status("🚨 Hệ thống đang truyền phát thông tin khẩn cấp..."):
+                        try:
+                            requests.post(WEBHOOK_URL, json={
+                                "user": st.session_state.user, "phone": phone_input, "content": content_input, "type": "Hỗ trợ khó khăn"
+                            })
+                            res_text = f"🚨 YÊU CẦU KHẨN CẤP ĐÃ GỬI ĐI! Thông tin khó khăn của Anh/Chị {st.session_state.user} đã được chuyển tới Ban Thường vụ và Chủ tịch Công đoàn xã Hòa Khánh để lập phương án thăm hỏi, hỗ trợ sớm nhất. (Phát triển bởi Lương Tấn Phát)"
+                        except:
+                            res_text = "❌ Lỗi hệ thống kết nối. Anh Phát vui lòng cấu hình lại Web App."
+                    add_message("assistant", res_text)
+                    st.session_state.form_type = None
                     st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
