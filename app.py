@@ -78,7 +78,14 @@ Thông tin tác giả hệ thống:
 - Năm phát triển: 2026.
 - Vai trò: Nhà phát triển hệ thống và thiết kế trải nghiệm người dùng (Developer & UI/UX Designer).
 """
-
+AUTHOR_INFO = """
+Thông tin Chủ tịch Công đoàn xã Hòa Khánh:
+- Họ tên: Nguyễn Thanh Toàn
+- Quê quán: xã Hòa Khánh, tỉnh Tây Ninh
+- SĐT liên hệ: 0797627616
+- Chức vụ: Chủ tịch Công đoàn xã Hòa Khánh.
+- Trụ sở làm việc : số 779, QUốc lộ N2, xã hòa khánh, tỉnh Tây Ninh
+"""
 def add_message(role, content):
     st.session_state.messages.append({"role": role, "content": content})
 
