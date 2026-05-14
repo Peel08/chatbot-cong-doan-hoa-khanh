@@ -5,7 +5,7 @@ import time
 
 # --- 1. CẤU HÌNH TRANG ---
 st.set_page_config(
-    page_title="Hòa Khánh Digital AI", 
+    page_title="Công Đoàn AI", 
     page_icon="🤖", 
     layout="wide"
 )
@@ -95,11 +95,11 @@ if "form_type" not in st.session_state: st.session_state.form_type = None  # Non
 # --- THÔNG TIN CHỦ TỊCH CÔNG ĐOÀN XÃ HÒA KHÁNH ---
 CHU_TICH_INFO = """
 Thông tin về Chủ tịch Công đoàn cơ sở xã Hòa Khánh:
-- Họ và tên: [Điền tên Chủ tịch vào đây]
-- Chức vụ: Chủ tịch Công đoàn cơ sở xã Hòa Khánh.
-- Địa điểm làm việc: Phòng làm việc khối Đoàn thể - UBND xã Hòa Khánh.
-- Số điện thoại liên hệ: [Điền SĐT Chủ tịch vào đây]
-- Email: [Điền Email Chủ tịch vào đây]
+- Họ và tên: Nguyễn Thanh Toàn
+- Chức vụ: Phó Chủ tịch Ủy ban MTTQ xã đồng thời  Chủ tịch Công đoàn cơ sở xã Hòa Khánh.
+- Địa điểm làm việc: số 779, QUốc lộ N2, xã hòa khánh, tỉnh Tây Ninh - UBND xã Hòa Khánh.
+- Số điện thoại liên hệ: 0797627616
+- Email: thanhtoan26091992@gmail.com
 - Nhiệm vụ: Chịu trách nhiệm chỉ đạo điều hành toàn bộ hoạt động bảo vệ quyền, lợi ích hợp pháp chính đáng của đoàn viên và người lao động trên địa bàn xã.
 """
 
@@ -144,10 +144,10 @@ if not st.session_state.logged:
 
 # --- 6. GIAO DIỆN CHÍNH SAU KHI KÍCH HOẠT ---
 else:
-    st.markdown(f"<span class='gradient-text'>Xin chào {st.session_state.user}!</span>", unsafe_allow_html=True)
+    st.markdown(f"<span class='gradient-text'>Xin chào {st.session_state.user}! Tôi là trợ lý ảo của Công đoàn xã Hòa Khánh, tôi có thể giúp gì cho anh/chị</span>", unsafe_allow_html=True)
     
     # HIỂN THỊ ĐẦY ĐỦ 4 CHỨC NĂNG NHIỆM VỤ NHANH
-    st.markdown("<p style='font-size:0.85rem; color:#666; margin-top:10px; font-weight:600;'>CHỌN NHIỆM VỤ NHANH:</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:0.85rem; color:#666; margin-top:10px; font-weight:600;'>CHỌN CÂU HỎI NHANH:</p>", unsafe_allow_html=True)
     
     col_1, col_2 = st.columns(2)
     with col_1:
@@ -163,7 +163,7 @@ else:
         if st.button("🆘 HỖ TRỢ KHÓ KHĂN"):
             st.session_state.form_type = "ho_tro"  # Mở form hỗ trợ khó khăn (MỚI)
             st.rerun()
-        if st.button("🗑️ LÀM MỚI CHAT"):
+        if st.button("🗑️ LÀM MỚI CUỘC TRÒ CHUYỆN"):
             st.session_state.messages = []
             st.session_state.form_type = None
             st.rerun()
