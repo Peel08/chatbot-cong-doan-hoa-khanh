@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # --- 2. DÁN URL GOOGLE SCRIPT MỚI CỦA ANH VÀO ĐÂY ---
-WEBHOOK_URL = "DÁN_LINK_WEB_APP_CỦA_ANH_VÀO_ĐÂY"
+WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzaBFI6oxBjtn-m6wqVfiuHQb79cVXyannNpACaPF4WtaRxoaeegXCIkGoJWzR5c974Kw/exec"
 
 # --- 3. CSS SIÊU CÔNG NGHỆ (TỐI ƯU MOBILE 100%) ---
 st.markdown('''
