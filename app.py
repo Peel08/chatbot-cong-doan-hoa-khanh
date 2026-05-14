@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- 2. CSS SIÊU CÔNG NGHỆ (TỐI ƯU MOBILE 100%) ---
+# --- 2. CSS SIÊU CÔNG NGHỆ (TỐI ƯU MOBILE 100% + THÔNG TIN TÁC GIẢ) ---
 st.markdown('''
 <style>
     .stApp {
@@ -31,13 +31,16 @@ st.markdown('''
         box-shadow: 0 4px 15px rgba(0, 71, 171, 0.3) !important;
     }
 
-    /* Style cho các Tab nhiệm vụ nhanh trên màn hình chính */
-    .task-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-bottom: 20px;
+    /* Style cho thông tin tác giả dưới nút đăng nhập */
+    .author-footer {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #ddd;
+        color: #666;
+        font-size: 0.85rem;
     }
+    .author-footer b { color: #0047AB; }
 
     .gradient-text {
         background: -webkit-linear-gradient(#004494, #00d4ff);
@@ -46,7 +49,7 @@ st.markdown('''
         font-weight: bold;
     }
 
-    /* Ẩn Sidebar hoàn toàn trên mobile để tránh gây rối */
+    /* Ẩn Sidebar hoàn toàn */
     [data-testid="stSidebar"] { display: none; }
     [data-testid="stSidebarCollapsedControl"] { display: none; }
 
@@ -63,6 +66,16 @@ else:
 
 if "messages" not in st.session_state: st.session_state.messages = []
 if "logged" not in st.session_state: st.session_state.logged = False
+
+# DỮ LIỆU TÁC GIẢ ĐỂ AI TRẢ LỜI
+AUTHOR_INFO = """
+Thông tin tác giả hệ thống:
+- Họ tên: Lương Tấn Phát
+- Đơn vị: Công đoàn cơ sở / Youth Union xã Hòa Khánh.
+- Dự án: Hòa Khánh Digital AI - Số hóa công tác Công đoàn & Thanh niên.
+- Năm phát triển: 2026.
+- Vai trò: Nhà phát triển hệ thống và thiết kế trải nghiệm người dùng (Developer & UI/UX Designer).
+"""
 
 def add_message(role, content):
     st.session_state.messages.append({"role": role, "content": content})
@@ -87,13 +100,18 @@ if not st.session_state.logged:
                 st.session_state.logged = True
                 st.rerun()
 
-# --- 5. GIAO DIỆN CHÍNH (FIX MOBILE HIỆN MENU) ---
+        # Hiển thị thông tin tác giả ngay màn hình chính
+        st.markdown(f'''
+            <div class="author-footer">
+                Tác giả & Thiết kế: <b>Lương Tấn Phát</b><br>
+                Hòa Khánh Digital AI © 2026
+            </div>
+        ''', unsafe_allow_html=True)
+
+# --- 5. GIAO DIỆN CHÍNH ---
 else:
-    # Header chào mừng
     st.markdown(f"### <span class='gradient-text'>Xin chào {st.session_state.user}!</span>", unsafe_allow_html=True)
     
-    # ĐƯA MENU NHIỆM VỤ NHANH RA NGOÀI (Dưới dạng các nút bấm Tab)
-    # Cách này giúp nút luôn hiện trên iPhone
     st.markdown("<p style='font-size:0.8rem; color:#666; margin-bottom:5px;'>CHỌN NHIỆM VỤ NHANH:</p>", unsafe_allow_html=True)
     
     col_a, col_b = st.columns(2)
@@ -114,17 +132,14 @@ else:
 
     st.markdown("---")
 
-    # Hiển thị lịch sử chat
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # Ô nhập liệu (Luôn ở dưới cùng)
     if prompt := st.chat_input("Nhập câu hỏi..."):
         add_message("user", prompt)
         st.rerun()
 
-    # AI Phản hồi
     if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
         with st.chat_message("assistant"):
             placeholder = st.empty()
@@ -132,7 +147,12 @@ else:
             completion = client.chat.completions.create(
                 model="llama-3.1-8b-instant",
                 messages=[
-                    {"role": "system", "content": f"Bạn là trợ lý AI công đoàn xã Hòa Khánh. Gọi là Anh/Chị {st.session_state.user}."},
+                    {
+                        "role": "system", 
+                        "content": f"Bạn là trợ lý AI công đoàn xã Hòa Khánh. Gọi người dùng là Anh/Chị {st.session_state.user}. "
+                                   f"KHI NGƯỜI DÙNG HỎI VỀ TÁC GIẢ, NGƯỜI TẠO RA BẠN, HOẶC THÔNG TIN NHÀ PHÁT TRIỂN, "
+                                   f"hãy trả lời đầy đủ nội dung sau: {AUTHOR_INFO}"
+                    },
                     *[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
                 ],
                 stream=True,
