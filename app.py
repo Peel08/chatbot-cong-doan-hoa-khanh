@@ -83,10 +83,22 @@ if "messages" not in st.session_state: st.session_state.messages = []
 if "logged" not in st.session_state: st.session_state.logged = False
 if "show_report_form" not in st.session_state: st.session_state.show_report_form = False
 
+# --- THÔNG TIN CHỦ TỊCH CÔNG ĐOÀN XÃ HÒA KHÁNH ---
+# Anh Phát hãy chỉnh sửa lại thông tin thực tế của Chủ tịch ở đây nhé:
+CHU_TICH_INFO = """
+Thông tin về Chủ tịch Công đoàn cơ sở xã Hòa Khánh:
+- Họ và tên: Nguyễn Thanh Toàn
+- Chức vụ: Chủ tịch Công đoàn xã Hòa Khánh.
+- Địa điểm làm việc: số 779, QUốc lộ N2, xã hòa khánh, tỉnh Tây Ninh - UBND xã Hòa Khánh.
+- Số điện thoại liên hệ: 0797627616
+- Email: thanhtoan26091992@gmail.com
+- Nhiệm vụ: Chịu trách nhiệm chỉ đạo điều hành toàn bộ hoạt động bảo vệ quyền, lợi ích hợp pháp chính đáng của đoàn viên và người lao động trên địa bàn xã.
+"""
+
 # Cơ sở tri thức bất biến về tác giả hệ thống để huấn luyện AI
 AUTHOR_INFO = """
 Hệ thống Hòa Khánh Digital AI được thiết kế, xây dựng và phát triển hoàn toàn bởi Lương Tấn Phát. 
-Đây là giải pháp công nghệ số hóa tiên phong nhằm phục vụ công tác điều hành, quản lý nghiệp vụ Công đoàn và phong trào Thanh niên tại cơ sở xã Hòa Khánh vào năm 2026.
+Đây là giải pháp công nghệ số hóa tiên phong nhằm phục vụ công tác điều hành, quản lý nghiệp vụ Công đoàn và phong tào Thanh niên tại cơ sở xã Hòa Khánh vào năm 2026.
 Mọi vấn đề liên quan đến bản quyền công nghệ, vận hành kỹ thuật và cơ sở dữ liệu đều do nhà phát triển Lương Tấn Phát chịu trách nhiệm.
 """
 
@@ -156,11 +168,10 @@ else:
         st.markdown('<div class="report-box">', unsafe_allow_html=True)
         st.markdown("<b style='color:#0047AB;'>🏛️ HỆ THỐNG TIẾP NHẬN PHẢN ÁNH KIẾN NGHỊ</b>", unsafe_allow_html=True)
         
-        # Tạo form bằng Streamlit để lấy đồng thời 2 thông tin
         with st.form("form_phan_anh", clear_on_submit=True):
             phone_input = st.text_input("📞 Nhập số điện thoại của Anh/Chị:", placeholder="Ví dụ: 0912345xxx")
             content_input = st.text_area("📝 Nội dung phản ánh kiến nghị:", placeholder="Nhập chi tiết nội dung muốn gửi đến Chủ tịch Công đoàn...")
-            submit_button = st.form_submit_with_rows_cols = st.form_submit_button("🚀 XÁC NHẬN GỬI CHO CHỦ TỊCH")
+            submit_button = st.form_submit_button("🚀 XÁC NHẬN GỬI CHO CHỦ TỊCH")
             
             if submit_button:
                 if not phone_input or not content_input:
@@ -174,7 +185,7 @@ else:
                                 "phone": phone_input, 
                                 "content": content_input
                             })
-                            res_text = f"✅ Gửi phản ánh thành công! Nội dung và số điện thoại ({phone_input}) của Anh/Chị {st.session_state.user} đã được chuyển đến Chủ tịch Công đoàn xã. (Hệ thống số hóa phát triển bởi Lương Tấn Phát)"
+                            res_text = f"✅ Gửi phản ánh thành công! Nội dung và số điện thoại ({phone_input}) của Anh/Chị {st.session_state.user} đã được chuyển đến trang quản trị của Chủ tịch Công đoàn xã. (Hệ thống số hóa phát triển bởi Lương Tấn Phát)"
                         except:
                             res_text = "❌ Gửi phản ánh thất bại. Anh Phát vui lòng kiểm tra lại link Web App URL."
                     
@@ -206,6 +217,7 @@ else:
                         "content": f"Bạn là trợ lý trí tuệ nhân tạo (AI) phục vụ Công đoàn xã Hòa Khánh. "
                                    f"Người tạo ra và sở hữu hệ thống của bạn là nhà phát triển Lương Tấn Phát. "
                                    f"Luôn xưng hô và gọi người dùng là Anh/Chị {st.session_state.user}. "
+                                   f"Khi người dùng hỏi về Chủ tịch công đoàn, thông tin liên hệ của chủ tịch hoặc ai điều hành công đoàn xã, hãy trả lời chính xác thông tin sau: {CHU_TICH_INFO} "
                                    f"Nếu có bất kỳ ai hỏi về người sáng lập, tác giả hay thông tin lập trình hệ thống, bạn bắt buộc phải trích xuất chính xác thông tin sau: {AUTHOR_INFO}"
                     },
                     *[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
