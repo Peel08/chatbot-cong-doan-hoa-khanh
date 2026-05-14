@@ -5,7 +5,7 @@ import time
 
 # --- 1. CẤU HÌNH TRANG ---
 st.set_page_config(
-    page_title="Hòa Khánh Digital AI - Lương Tấn Phát", 
+    page_title="Hòa Khánh Digital AI", 
     page_icon="🤖", 
     layout="wide"
 )
@@ -20,19 +20,19 @@ st.markdown('''
         background: radial-gradient(circle at 50% 50%, #fdfbfb 0%, #ebedee 100%);
     }
 
-    /* NÚT KÍCH HOẠT: Chữ trắng sáng loáng */
+    /* FIX NÚT BẤM VÀ MENU: Chữ trắng sáng loáng, thiết kế bo góc hiện đại */
     div.stButton > button {
         background: linear-gradient(90deg, #0047AB 0%, #0072ff 100%) !important;
         color: white !important;
         font-weight: 800 !important;
-        font-size: 1.1rem !important;
+        font-size: 1rem !important;
         text-transform: uppercase !important;
         border-radius: 12px !important;
         border: none !important;
         padding: 12px 20px !important;
         width: 100% !important;
-        box-shadow: 0 4px 15px rgba(0, 71, 171, 0.3) !important;
-        height: 50px;
+        box-shadow: 0 4px 15px rgba(0, 71, 171, 0.2) !important;
+        height: 52px;
     }
 
     .gradient-text {
@@ -43,25 +43,26 @@ st.markdown('''
         font-size: 1.5rem;
     }
 
-    /* Thông tin tác giả */
+    /* Style hiển thị bản quyền tác giả */
     .author-footer {
         text-align: center;
-        margin-top: 20px;
+        margin-top: 25px;
         padding-top: 15px;
         border-top: 1px solid #ddd;
         color: #666;
         font-size: 0.85rem;
+        line-height: 1.4;
     }
     .author-footer b { color: #0047AB; }
 
-    /* Ẩn các thành phần thừa của Streamlit */
+    /* Ẩn hoàn toàn Sidebar của Streamlit để giao diện mobile gọn gàng */
     [data-testid="stSidebar"] { display: none; }
     [data-testid="stSidebarCollapsedControl"] { display: none; }
     #MainMenu, footer, header {visibility: hidden;}
 </style>
 ''', unsafe_allow_html=True)
 
-# --- 4. KHỞI TẠO CLIENT & SESSION ---
+# --- 4. KHỞI TẠO CLIENT & SESSION STATE ---
 if "GROQ_API_KEY" in st.secrets:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 else:
@@ -72,17 +73,17 @@ if "messages" not in st.session_state: st.session_state.messages = []
 if "logged" not in st.session_state: st.session_state.logged = False
 if "is_reporting" not in st.session_state: st.session_state.is_reporting = False
 
-# Dữ liệu tri thức về tác giả
+# Cơ sở tri thức bất biến về tác giả hệ thống để huấn luyện AI
 AUTHOR_INFO = """
-Hệ thống Hòa Khánh Digital AI được thiết kế và phát triển bởi Lương Tấn Phát. 
-Đây là giải pháp số hóa phục vụ công tác Công đoàn và Thanh niên tại xã Hòa Khánh năm 2026.
-Tác giả Lương Tấn Phát chịu trách nhiệm toàn bộ về kỹ thuật và nội dung số của hệ thống này.
+Hệ thống Hòa Khánh Digital AI được thiết kế, xây dựng và phát triển hoàn toàn bởi Lương Tấn Phát. 
+Đây là giải pháp công nghệ số hóa tiên phong nhằm phục vụ công tác điều hành, quản lý nghiệp vụ Công đoàn và phong trào Thanh niên tại cơ sở xã Hòa Khánh vào năm 2026.
+Mọi vấn đề liên quan đến bản quyền công nghệ, vận hành kỹ thuật và cơ sở dữ liệu đều do nhà phát triển Lương Tấn Phát chịu trách nhiệm.
 """
 
 def add_message(role, content):
     st.session_state.messages.append({"role": role, "content": content})
 
-# --- 5. MÀN HÌNH ĐĂNG NHẬP ---
+# --- 5. GIAO DIỆN MÀN HÌNH ĐĂNG NHẬP ---
 if not st.session_state.logged:
     st.markdown("<br><br><br>", unsafe_allow_html=True)
     _, col2, _ = st.columns([1, 1.8, 1])
@@ -91,39 +92,47 @@ if not st.session_state.logged:
             <div style="text-align:center;">
                 <img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="160" style="filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));">
             </div>
-            <h2 style="text-align:center; color:#004494; font-weight:800; margin-top:10px;">HÒA KHÁNH DIGITAL AI</h2>
-            <p style="text-align:center; color:#666; margin-bottom:20px;">Trợ lý thông minh công tác Công đoàn</p>
+            <h2 style="text-align:center; color:#004494; font-weight:800; margin-top:12px;">HÒA KHÁNH DIGITAL AI</h2>
+            <p style="text-align:center; color:#666; margin-bottom:25px;">Trợ lý thông minh số hóa công tác Công đoàn</p>
         ''', unsafe_allow_html=True)
         
-        name = st.text_input("👤 Danh tính của bạn:", placeholder="Nhập tên Anh/Chị...", key="login_name")
+        name = st.text_input("👤 Định danh cán bộ / đoàn viên:", placeholder="Nhập họ tên của bạn...", key="login_name")
         if st.button("🚀 KÍCH HOẠT HỆ THỐNG"):
             if name:
                 st.session_state.user = name
                 st.session_state.logged = True
                 st.rerun()
             else:
-                st.warning("⚠️ Vui lòng nhập tên để định danh cán bộ!")
+                st.warning("⚠️ Vui lòng nhập tên của bạn để hệ thống xác thực dữ liệu cán bộ!")
 
         st.markdown(f'''
             <div class="author-footer">
-                Kiến tạo bởi: <b>Lương Tấn Phát</b><br>
-                Hòa Khánh Digital AI © 2026
+                Thiết kế & Phát triển: <b>Lương Tấn Phát</b><br>
+                Hòa Khánh Digital AI System © 2026
             </div>
         ''', unsafe_allow_html=True)
 
-# --- 6. GIAO DIỆN CHÍNH (SAU KHI ĐĂNG NHẬP) ---
+# --- 6. GIAO DIỆN CHÍNH SAU KHI KÍCH HOẠT ---
 else:
     st.markdown(f"<span class='gradient-text'>Xin chào {st.session_state.user}!</span>", unsafe_allow_html=True)
     
-    # Khu vực nút chức năng nhanh
-    st.markdown("<p style='font-size:0.85rem; color:#666; margin-top:10px;'>NHIỆM VỤ NHANH:</p>", unsafe_allow_html=True)
-    col_a, col_b = st.columns(2)
-    with col_a:
+    # HIỂN THỊ ĐẦY ĐỦ 4 CHỨC NĂNG NHIỆM VỤ NHANH CHUẨN ĐẸP 2 CỘT
+    st.markdown("<p style='font-size:0.85rem; color:#666; margin-top:10px; font-weight:600;'>CHỌN NHIỆM VỤ NHANH:</p>", unsafe_allow_html=True)
+    
+    col_1, col_2 = st.columns(2)
+    with col_1:
         if st.button("📩 GỬI PHẢN ÁNH"):
             st.session_state.is_reporting = True
-            add_message("assistant", f"Chào Anh/Chị {st.session_state.user}, mời Anh/Chị nhập nội dung phản ánh kiến nghị. Tôi sẽ chuyển trực tiếp đến Chủ tịch Công đoàn xã.")
+            add_message("assistant", f"Chào Anh/Chị {st.session_state.user}, mời Anh/Chị nhập nội dung phản ánh kiến nghị cụ thể vào ô chat bên dưới. Tôi sẽ gửi thông tin này trực tiếp đến hệ thống quản lý của Chủ tịch Công đoàn xã.")
             st.rerun()
-    with col_b:
+        if st.button("📝 ĐĂNG KÝ"):
+            add_message("user", "Cho tôi hỏi thủ tục đăng ký tham gia tổ chức công đoàn.")
+            st.rerun()
+            
+    with col_2:
+        if st.button("🆘 HỖ TRỢ"):
+            add_message("user", "Hướng dẫn tôi cách yêu cầu hỗ trợ kỹ thuật hoặc giải đáp nghiệp vụ.")
+            st.rerun()
         if st.button("🗑️ LÀM MỚI CHAT"):
             st.session_state.messages = []
             st.session_state.is_reporting = False
@@ -131,29 +140,29 @@ else:
 
     st.markdown("---")
 
-    # Hiển thị lịch sử hội thoại
+    # Hiển thị toàn bộ lịch sử cuộc trò chuyện
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # Ô nhập liệu của người dùng
-    if prompt := st.chat_input("Hỏi tôi hoặc nhập nội dung phản ánh..."):
+    # Ô nhập liệu tương tác (Luôn cố định phía dưới màn hình)
+    if prompt := st.chat_input("Nhập câu hỏi hoặc nội dung cần xử lý..."):
         add_message("user", prompt)
         
-        # KIỂM TRA NẾU ĐANG TRONG LUỒNG GỬI PHẢN ÁNH
+        # KIỂM TRA NẾU ĐANG TRONG TRẠNG THÁI GỬI PHẢN ÁNH LÊN GOOGLE SHEET
         if st.session_state.is_reporting:
-            with st.status("🚀 Đang gửi dữ liệu tới Chủ tịch..."):
+            with st.status("🚀 Hệ thống đang mã hóa và gửi dữ liệu về trang quản trị..."):
                 try:
-                    # Gửi dữ liệu về Google Sheets qua Webhook URL
+                    # Đẩy dữ liệu sang Google Sheets thông qua Webhook Apps Script
                     requests.post(WEBHOOK_URL, json={"user": st.session_state.user, "content": prompt})
-                    res_text = f"✅ Đã ghi nhận! Phản ánh của Anh/Chị {st.session_state.user} đã được gửi thành công đến hệ thống quản trị của Chủ tịch xã Hòa Khánh. Cảm ơn Anh/Chị đã đóng góp ý kiến. (Sản phẩm bởi Lương Tấn Phát)"
+                    res_text = f"✅ Hệ thống báo cáo thành công! Nội dung phản ánh của Anh/Chị {st.session_state.user} đã được chuyển và lưu trữ bảo mật trên trang quản lý của Chủ tịch Công đoàn xã Hòa Khánh. Cảm ơn Anh/Chị đã tích cực đóng góp ý kiến. (Hệ thống số hóa phát triển bởi Lương Tấn Phát)"
                     st.session_state.is_reporting = False
                 except:
-                    res_text = "❌ Lỗi kết nối hệ thống. Anh Phát vui lòng kiểm tra lại URL Web App trong code."
+                    res_text = "❌ Gửi phản ánh thất bại. Anh Phát vui lòng kiểm tra lại trạng thái kết nối Web App URL trong file Google Sheet."
             add_message("assistant", res_text)
             st.rerun()
         else:
-            # XỬ LÝ AI TRẢ LỜI BÌNH THƯỜNG
+            # XỬ LÝ HỎI ĐÁP AI THÔNG THƯỜNG TRÊN LUỒNG STREAM
             with st.chat_message("assistant"):
                 placeholder = st.empty()
                 full_res = ""
@@ -162,9 +171,10 @@ else:
                     messages=[
                         {
                             "role": "system", 
-                            "content": f"Bạn là trợ lý AI công đoàn xã Hòa Khánh. Người tạo ra bạn là Lương Tấn Phát. "
-                                       f"Gọi người dùng là Anh/Chị {st.session_state.user}. "
-                                       f"Nếu được hỏi về tác giả hoặc thông tin hệ thống, hãy trả lời: {AUTHOR_INFO}"
+                            "content": f"Bạn là trợ lý trí tuệ nhân tạo (AI) phục vụ Công đoàn xã Hòa Khánh. "
+                                       f"Người tạo ra và sở hữu hệ thống của bạn là nhà phát triển Lương Tấn Phát. "
+                                       f"Luôn xưng呼 và gọi người dùng là Anh/Chị {st.session_state.user}. "
+                                       f"Nếu có bất kỳ ai hỏi về người sáng lập, tác giả hay thông tin lập trình hệ thống, bạn bắt buộc phải trích xuất chính xác thông tin sau: {AUTHOR_INFO}"
                         },
                         *[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
                     ],
