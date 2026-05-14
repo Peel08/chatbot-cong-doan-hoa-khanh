@@ -7,46 +7,47 @@ st.set_page_config(
     page_title="Hòa Khánh Digital AI", 
     page_icon="🤖", 
     layout="wide",
-    initial_sidebar_state="expanded" 
+    initial_sidebar_state="expanded"
 )
 
-# --- 2. CSS "ÉP" HIỆN NÚT MENU TRÊN ĐIỆN THOẠI ---
+# --- 2. CSS & JAVASCRIPT ĐỂ ÉP HIỆN NÚT MENU (FIX TRIỆT ĐỂ) ---
 st.markdown('''
 <style>
-    /* Nền tổng thể */
+    /* Nền ứng dụng */
     .stApp {
         background: radial-gradient(circle at 50% 50%, #fdfbfb 0%, #ebedee 100%);
     }
 
-    /* ÉP HIỆN NÚT SIDEBAR TRÊN MOBILE VÀ ĐỔI MÀU CHO RÕ */
-    /* Đoạn này sẽ biến cái nút vốn bị ẩn thành một nút xanh nổi bật */
-    [data-testid="stSidebarCollapsedControl"] {
-        display: flex !important;
-        visibility: visible !important;
-        background-color: #0047AB !important; /* Màu xanh đậm */
-        border-radius: 0 10px 10px 0 !important;
-        left: 0 !important;
-        top: 10px !important;
-        width: 60px !important;
-        height: 45px !important;
-        z-index: 999999 !important;
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.2) !important;
-    }
-    
-    /* Làm cho biểu tượng mũi tên/menu bên trong màu trắng to rõ */
-    [data-testid="stSidebarCollapsedControl"] svg {
-        fill: white !important;
-        color: white !important;
-        width: 35px !important;
-        height: 35px !important;
+    /* TẠO NÚT MENU NỔI (FLOATING MENU) - LUÔN HIỆN TRÊN ĐIỆN THOẠI */
+    .floating-menu-btn {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        width: 45px;
+        height: 45px;
+        background: #0047AB;
+        color: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999999;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        cursor: pointer;
+        border: 2px solid rgba(255,255,255,0.2);
     }
 
-    /* Style Sidebar */
+    /* Ẩn tiêu đề mặc định và các nút thừa của Streamlit để lấy chỗ cho nút mới */
+    [data-testid="stHeader"] {
+        background-color: rgba(0,0,0,0) !important;
+    }
+    
+    /* Ép hiển thị nội dung Sidebar xịn mịn */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #002B5B 0%, #001524 100%) !important;
     }
 
-    /* Style cho các nút Nhiệm vụ nhanh trong Sidebar */
+    /* Nút Kích hoạt & Nhiệm vụ nhanh */
     div.stButton > button {
         background: linear-gradient(90deg, #0047AB 0%, #0072ff 100%) !important;
         color: white !important;
@@ -54,8 +55,8 @@ st.markdown('''
         border-radius: 12px !important;
         border: none !important;
         width: 100% !important;
-        opacity: 1 !important;
         text-transform: uppercase !important;
+        opacity: 1 !important;
     }
 
     .gradient-text {
@@ -67,6 +68,29 @@ st.markdown('''
 
     #MainMenu, footer, header {visibility: hidden;}
 </style>
+
+<!-- Nút Menu HTML -->
+<div class="floating-menu-btn" onclick="openSidebar()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+</div>
+
+<script>
+    function openSidebar() {
+        // Tìm nút mũi tên ẩn của Streamlit và click vào nó
+        const buttons = window.parent.document.getElementsByTagName('button');
+        for (let i = 0; i < buttons.length; i++) {
+            if (buttons[i].getAttribute('aria-label') === 'Open sidebar' || 
+                buttons[i].querySelector('svg path[d^="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6-6-6z"]')) {
+                buttons[i].click();
+                break;
+            }
+        }
+    }
+</script>
 ''', unsafe_allow_html=True)
 
 # --- 3. KHỞI TẠO CLIENT ---
@@ -89,7 +113,7 @@ if not st.session_state.logged:
     with col2:
         st.markdown('<div style="text-align:center;"><img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="150"></div>', unsafe_allow_html=True)
         st.markdown("<h2 style='text-align:center; color:#004494;'>HÒA KHÁNH DIGITAL AI</h2>", unsafe_allow_html=True)
-        name = st.text_input("👤 Định danh của bạn:", placeholder="Nhập tên...")
+        name = st.text_input("👤 Định danh của bạn:", placeholder="Nhập tên...", key="user_login_name")
         if st.button("🚀 KÍCH HOẠT HỆ THỐNG"):
             if name:
                 st.session_state.user = name
@@ -118,12 +142,12 @@ else:
         }
 
         for label, prompt_text in suggestions.items():
-            if st.button(label):
+            if st.button(label, key=f"btn_{label}"):
                 add_message("user", prompt_text)
                 st.rerun()
 
         st.markdown("<br><br>", unsafe_allow_html=True)
-        if st.button("🗑️ Làm mới phiên chat"):
+        if st.button("🗑️ Làm mới hội thoại"):
             st.session_state.messages = []
             st.rerun()
 
