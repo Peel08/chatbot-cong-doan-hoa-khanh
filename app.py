@@ -13,125 +13,76 @@ st.set_page_config(
 # --- 2. DÁN URL GOOGLE SCRIPT CỦA ANH VÀO ĐÂY ---
 WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzK8E15i3qrT5P8Xm0iJruhvb6pMhuYs7EuvmYbbYvb5EmmDp8b_eybi_NJ7ltG9FHUTQ/exec"
 
-# --- 3. CSS SIÊU CÔNG NGHỆ (TỐI ƯU MOBILE 100%) ---
+# --- 3. CSS SIÊU CÔNG NGHỆ ---
 st.markdown('''
 <style>
-    .stApp {
-        background: radial-gradient(circle at 50% 50%, #fdfbfb 0%, #ebedee 100%);
-    }
-
-    /* FIX NÚT BẤM VÀ MENU: Chữ trắng sáng loáng, thiết kế bo góc hiện đại */
+    .stApp { background: radial-gradient(circle at 50% 50%, #fdfbfb 0%, #ebedee 100%); }
     div.stButton > button {
         background: linear-gradient(90deg, #0047AB 0%, #0072ff 100%) !important;
-        color: white !important;
-        font-weight: 800 !important;
-        font-size: 1rem !important;
-        text-transform: uppercase !important;
-        border-radius: 12px !important;
-        border: none !important;
-        padding: 12px 20px !important;
-        width: 100% !important;
-        box-shadow: 0 4px 15px rgba(0, 71, 171, 0.2) !important;
-        height: 52px;
+        color: white !important; font-weight: 800 !important; border-radius: 12px !important;
+        width: 100% !important; box-shadow: 0 4px 15px rgba(0, 71, 171, 0.2) !important;
+        height: 52px; border: none !important;
     }
-
     .gradient-text {
         background: -webkit-linear-gradient(#004494, #00d4ff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-weight: 800;
-        font-size: 1.5rem;
+        font-weight: 800; font-size: 1.5rem;
     }
-
-    /* Style hiển thị bản quyền tác giả */
-    .author-footer {
-        text-align: center;
-        margin-top: 25px;
-        padding-top: 15px;
-        border-top: 1px solid #ddd;
-        color: #666;
-        font-size: 0.85rem;
-        line-height: 1.4;
-    }
-    .author-footer b { color: #0047AB; }
-
-    /* Ẩn hoàn toàn Sidebar của Streamlit để giao diện mobile gọn gàng */
+    .author-footer { text-align: center; margin-top: 25px; padding-top: 15px; border-top: 1px solid #ddd; color: #666; font-size: 0.85rem; }
     [data-testid="stSidebar"] { display: none; }
-    [data-testid="stSidebarCollapsedControl"] { display: none; }
     #MainMenu, footer, header {visibility: hidden;}
 </style>
 ''', unsafe_allow_html=True)
 
-# --- 4. KHỞI TẠO CLIENT & SESSION STATE ---
+# --- 4. KHỞI TẠO ---
 if "GROQ_API_KEY" in st.secrets:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 else:
-    st.error("⚠️ Thiếu API Key trong phần Secrets của Streamlit!")
+    st.error("⚠️ Thiếu API Key trong Secrets!")
     st.stop()
 
 if "messages" not in st.session_state: st.session_state.messages = []
 if "logged" not in st.session_state: st.session_state.logged = False
 if "is_reporting" not in st.session_state: st.session_state.is_reporting = False
 
-# Cơ sở tri thức bất biến về tác giả hệ thống để huấn luyện AI
-AUTHOR_INFO = """
-Hệ thống Hòa Khánh Digital AI được thiết kế, xây dựng và phát triển hoàn toàn bởi Lương Tấn Phát. 
-Đây là giải pháp công nghệ số hóa tiên phong nhằm phục vụ công tác điều hành, quản lý nghiệp vụ Công đoàn và phong trào Thanh niên tại cơ sở xã Hòa Khánh vào năm 2026.
-Mọi vấn đề liên quan đến bản quyền công nghệ, vận hành kỹ thuật và cơ sở dữ liệu đều do nhà phát triển Lương Tấn Phát chịu trách nhiệm.
-"""
+AUTHOR_INFO = "Hệ thống Hòa Khánh Digital AI được phát triển bởi Lương Tấn Phát phục vụ công tác Công đoàn xã Hòa Khánh năm 2026."
 
 def add_message(role, content):
     st.session_state.messages.append({"role": role, "content": content})
 
-# --- 5. GIAO DIỆN MÀN HÌNH ĐĂNG NHẬP ---
+# --- 5. MÀN HÌNH ĐĂNG NHẬP ---
 if not st.session_state.logged:
     st.markdown("<br><br><br>", unsafe_allow_html=True)
     _, col2, _ = st.columns([1, 1.8, 1])
     with col2:
-        st.markdown(f'''
-            <div style="text-align:center;">
-                <img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="160" style="filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));">
-            </div>
-            <h2 style="text-align:center; color:#004494; font-weight:800; margin-top:12px;">HÒA KHÁNH DIGITAL AI</h2>
-            <p style="text-align:center; color:#666; margin-bottom:25px;">Trợ lý thông minh số hóa công tác Công đoàn</p>
-        ''', unsafe_allow_html=True)
-        
-        name = st.text_input("👤 Định danh cán bộ / đoàn viên:", placeholder="Nhập họ tên của bạn...", key="login_name")
+        st.markdown(f'<div style="text-align:center;"><img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="160"></div>', unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:center; color:#004494; font-weight:800;'>HÒA KHÁNH DIGITAL AI</h2>", unsafe_allow_html=True)
+        name = st.text_input("👤 Định danh:", placeholder="Nhập tên...", key="login_name")
         if st.button("🚀 KÍCH HOẠT HỆ THỐNG"):
             if name:
                 st.session_state.user = name
                 st.session_state.logged = True
                 st.rerun()
-            else:
-                st.warning("⚠️ Vui lòng nhập tên của bạn để hệ thống xác thực dữ liệu cán bộ!")
+        st.markdown(f'<div class="author-footer">Thiết kế bởi: <b>Lương Tấn Phát</b><br>Hòa Khánh Digital AI © 2026</div>', unsafe_allow_html=True)
 
-        st.markdown(f'''
-            <div class="author-footer">
-                Thiết kế & Phát triển: <b>Lương Tấn Phát</b><br>
-                Hòa Khánh Digital AI System © 2026
-            </div>
-        ''', unsafe_allow_html=True)
-
-# --- 6. GIAO DIỆN CHÍNH SAU KHI KÍCH HOẠT ---
+# --- 6. GIAO DIỆN CHÍNH ---
 else:
     st.markdown(f"<span class='gradient-text'>Xin chào {st.session_state.user}!</span>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:0.85rem; color:#666; margin-top:10px;'>NHIỆM VỤ NHANH:</p>", unsafe_allow_html=True)
     
-    # HIỂN THỊ ĐẦY ĐỦ 4 CHỨC NĂNG NHIỆM VỤ NHANH CHUẨN ĐẸP 2 CỘT
-    st.markdown("<p style='font-size:0.85rem; color:#666; margin-top:10px; font-weight:600;'>CHỌN NHIỆM VỤ NHANH:</p>", unsafe_allow_html=True)
-    
-    col_1, col_2 = st.columns(2)
-    with col_1:
+    c1, c2 = st.columns(2)
+    with c1:
         if st.button("📩 GỬI PHẢN ÁNH"):
             st.session_state.is_reporting = True
-            add_message("assistant", f"Chào Anh/Chị {st.session_state.user}, mời Anh/Chị nhập nội dung phản ánh kiến nghị cụ thể vào ô chat bên dưới. Tôi sẽ gửi thông tin này trực tiếp đến hệ thống quản lý của Chủ tịch Công đoàn xã.")
+            add_message("assistant", f"Mời Anh/Chị {st.session_state.user} nhập nội dung phản ánh. Tôi sẽ gửi tới Chủ tịch xã.")
             st.rerun()
         if st.button("📝 ĐĂNG KÝ"):
-            add_message("user", "Cho tôi hỏi thủ tục đăng ký tham gia tổ chức công đoàn.")
+            add_message("user", "Cho tôi hỏi thủ tục đăng ký tham gia công đoàn.")
             st.rerun()
-            
-    with col_2:
+    with c2:
         if st.button("🆘 HỖ TRỢ"):
-            add_message("user", "Hướng dẫn tôi cách yêu cầu hỗ trợ kỹ thuật hoặc giải đáp nghiệp vụ.")
+            add_message("user", "Hướng dẫn tôi cách yêu cầu hỗ trợ kỹ thuật.")
             st.rerun()
         if st.button("🗑️ LÀM MỚI CHAT"):
             st.session_state.messages = []
@@ -140,45 +91,46 @@ else:
 
     st.markdown("---")
 
-    # Hiển thị toàn bộ lịch sử cuộc trò chuyện
+    # Hiển thị hội thoại
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # Ô nhập liệu tương tác (Luôn cố định phía dưới màn hình)
-    if prompt := st.chat_input("Nhập câu hỏi hoặc nội dung cần xử lý..."):
+    # Ô nhập liệu thủ công
+    prompt = st.chat_input("Hỏi tôi hoặc nhập nội dung phản ánh...")
+    if prompt:
         add_message("user", prompt)
+        st.rerun()
+
+    # --- LOGIC TỰ ĐỘNG PHẢN HỒI KHI CÓ TIN NHẮN MỚI TỪ USER ---
+    if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
+        last_user_msg = st.session_state.messages[-1]["content"]
         
-        # KIỂM TRA NẾU ĐANG TRONG TRẠNG THÁI GỬI PHẢN ÁNH LÊN GOOGLE SHEET
+        # 1. Nếu là phản ánh -> Gửi tới Google Sheet
         if st.session_state.is_reporting:
-            with st.status("🚀 Hệ thống đang mã hóa và gửi dữ liệu về trang quản trị..."):
-                try:
-                    # Đẩy dữ liệu sang Google Sheets thông qua Webhook Apps Script
-                    requests.post(WEBHOOK_URL, json={"user": st.session_state.user, "content": prompt})
-                    res_text = f"✅ Hệ thống báo cáo thành công! Nội dung phản ánh của Anh/Chị {st.session_state.user} đã được chuyển và lưu trữ bảo mật trên trang quản lý của Chủ tịch Công đoàn xã Hòa Khánh. Cảm ơn Anh/Chị đã tích cực đóng góp ý kiến. (Hệ thống số hóa phát triển bởi Lương Tấn Phát)"
-                    st.session_state.is_reporting = False
-                except:
-                    res_text = "❌ Gửi phản ánh thất bại. Anh Phát vui lòng kiểm tra lại trạng thái kết nối Web App URL trong file Google Sheet."
-            add_message("assistant", res_text)
-            st.rerun()
+            with st.chat_message("assistant"):
+                with st.status("🚀 Đang gửi dữ liệu tới Chủ tịch..."):
+                    try:
+                        requests.post(WEBHOOK_URL, json={"user": st.session_state.user, "content": last_user_msg})
+                        res_text = f"✅ Đã gửi thành công! Nội dung của Anh/Chị {st.session_state.user} đã được chuyển tới Chủ tịch xã. (Tác giả: Lương Tấn Phát)"
+                        st.session_state.is_reporting = False
+                    except:
+                        res_text = "❌ Lỗi kết nối. Anh Phát kiểm tra lại Webhook URL nhé."
+                st.markdown(res_text)
+                add_message("assistant", res_text)
+        
+        # 2. Nếu là câu hỏi thường -> Gọi AI trả lời
         else:
-            # XỬ LÝ HỎI ĐÁP AI THÔNG THƯỜNG TRÊN LUỒNG STREAM
             with st.chat_message("assistant"):
                 placeholder = st.empty()
                 full_res = ""
                 completion = client.chat.completions.create(
                     model="llama-3.1-8b-instant",
                     messages=[
-                        {
-                            "role": "system", 
-                            "content": f"Bạn là trợ lý trí tuệ nhân tạo (AI) phục vụ Công đoàn xã Hòa Khánh. "
-                                       f"Người tạo ra và sở hữu hệ thống của bạn là nhà phát triển Lương Tấn Phát. "
-                                       f"Luôn xưng呼 và gọi người dùng là Anh/Chị {st.session_state.user}. "
-                                       f"Nếu có bất kỳ ai hỏi về người sáng lập, tác giả hay thông tin lập trình hệ thống, bạn bắt buộc phải trích xuất chính xác thông tin sau: {AUTHOR_INFO}"
-                        },
+                        {"role": "system", "content": f"Bạn là trợ lý AI công đoàn Hòa Khánh của Lương Tấn Phát. Gọi người dùng là Anh/Chị {st.session_state.user}. Tác giả: {AUTHOR_INFO}"},
                         *[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
                     ],
-                    stream=True,
+                    stream=True
                 )
                 for chunk in completion:
                     if chunk.choices[0].delta.content:
