@@ -71,6 +71,8 @@ if "logged" not in st.session_state: st.session_state.logged = False
 AUTHOR_INFO = """
 Thông tin tác giả hệ thống:
 - Họ tên: Lương Tấn Phát
+- Quê quán: Ấp Hóc Thơm 1, xã Hòa Khánh, tỉnh Tây Ninh
+- SĐT liên hệ: 0826674788
 - Đơn vị: Công đoàn / Youth Union xã Hòa Khánh.
 - Dự án: Hòa Khánh Digital AI - Số hóa công tác Công đoàn & Thanh niên.
 - Năm phát triển: 2026.
