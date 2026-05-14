@@ -1,144 +1,208 @@
 import streamlit as st
 from groq import Groq
-import os
+import time
 
-# 1. Cấu hình trang
-st.set_page_config(page_title="Hòa Khánh Digital AI", page_icon="robot.png", layout="wide")
+# --- 1. CẤU HÌNH TRANG ---
+st.set_page_config(
+    page_title="Hòa Khánh Digital AI", 
+    page_icon="🤖", 
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# 2. CSS Siêu Công Nghệ & Tối ưu Sidebar
+# --- 2. CSS SIÊU CÔNG NGHỆ (CUSTOM STYLE) ---
 st.markdown('''
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
-    .stApp { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+    /* Tổng thể nền */
+    .stApp {
+        background: radial-gradient(circle at 50% 50%, #fdfbfb 0%, #ebedee 100%);
+    }
 
-    /* Sidebar Glassmorphism */
+    /* Tùy chỉnh Sidebar */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #004494 0%, #001a35 100%) !important;
-        border-right: 1px solid rgba(255,255,255,0.1);
+        background: linear-gradient(180deg, #002B5B 0%, #001524 100%) !important;
+        box-shadow: 4px 0px 15px rgba(0,0,0,0.1);
     }
     
-    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
-        align-items: center !important;
-        text-align: center !important;
+    .sidebar-content {
+        padding: 20px;
+        text-align: center;
     }
 
-    /* Nút đề xuất tìm kiếm (Quick Actions) */
-    .stButton > button {
-        background: linear-gradient(90deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%) !important;
-        color: white !important;
-        border-radius: 20px !important;
-        border: none !important;
-        font-size: 0.85rem !important;
-        width: 100% !important;
-        margin-bottom: 5px;
-        transition: 0.3s;
+    /* Hiệu ứng Floating cho Robot */
+    .robot-container {
+        display: flex;
+        justify-content: center;
+        padding: 20px 0;
     }
-    .stButton > button:hover { transform: scale(1.03); }
-
-    /* Nút Xóa dữ liệu (màu khác biệt) */
-    .delete-btn > div > button {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    .floating { 
+        animation: float 3.5s ease-in-out infinite; 
+        width: 120px;
+        filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
     }
-
-    .sidebar-text { color: #e0e0e0 !important; }
-    .robot-box { animation: float 3s ease-in-out infinite; display: flex; justify-content: center; width: 100%; }
     @keyframes float {
         0% { transform: translateY(0px); }
         50% { transform: translateY(-15px); }
         100% { transform: translateY(0px); }
     }
+
+    /* Style cho các nút bấm Đề xuất */
+    div.stButton > button {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
+        text-align: left !important;
+        padding: 10px 15px !important;
+    }
+    div.stButton > button:hover {
+        background: rgba(0, 212, 255, 0.2) !important;
+        border-color: #00d4ff !important;
+        transform: translateX(5px);
+    }
+
+    /* Chat bubble tinh tế hơn */
+    .stChatMessage {
+        border-radius: 15px !important;
+        padding: 15px !important;
+        margin-bottom: 10px !important;
+        border: 1px solid rgba(0,0,0,0.05) !important;
+    }
     
+    /* Ẩn Header/Footer thừa */
     #MainMenu, footer, header {visibility: hidden;}
+    
+    /* Tiêu đề gradient */
+    .gradient-text {
+        background: -webkit-linear-gradient(#004494, #00d4ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: bold;
+    }
 </style>
 ''', unsafe_allow_html=True)
 
-# 3. Kết nối API
+# --- 3. KHỞI TẠO CLIENT & SESSION STATE ---
 if "GROQ_API_KEY" in st.secrets:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 else:
-    st.error("Lỗi: Thiếu API Key!")
+    st.error("⚠️ Vui lòng cấu hình GROQ_API_KEY trong Secrets!")
     st.stop()
 
-# 4. Quản lý trạng thái
-if "logged" not in st.session_state: st.session_state.logged = False
-if "messages" not in st.session_state: st.session_state.messages = []
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "logged" not in st.session_state:
+    st.session_state.logged = False
 
-# Hàm để xử lý khi nhấn nút đề xuất
-def send_suggestion(text):
-    st.session_state.messages.append({"role": "user", "content": text})
-    # Ở đây có thể gọi API ngay hoặc để Streamlit rerun để hiện tin nhắn
+# --- 4. HÀM XỬ LÝ LOGIC ---
+def add_message(role, content):
+    st.session_state.messages.append({"role": role, "content": content})
 
+# --- 5. GIAO DIỆN MÀN HÌNH CHÀO ---
 if not st.session_state.logged:
-    # --- MÀN HÌNH CHÀO ---
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([0.15, 0.7, 0.15])
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
-        st.markdown('<div style="text-align:center;" class="robot-box"><img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="200"></div>', unsafe_allow_html=True)
-        name = st.text_input("Định danh Cán bộ/Đoàn viên:", placeholder="Nhập tên...")
-        if st.button("🚀 KÍCH HOẠT"):
+        st.markdown(f'''
+            <div class="robot-container">
+                <img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" class="floating">
+            </div>
+            <h2 style="text-align:center; color:#004494;">HÒA KHÁNH DIGITAL AI</h2>
+            <p style="text-align:center; color:#666;">Trợ lý ảo thông minh dành cho Cán bộ & Đoàn viên</p>
+        ''', unsafe_allow_html=True)
+        
+        name = st.text_input("👤 Định danh của bạn:", placeholder="Ví dụ: Nguyễn Văn A...")
+        if st.button("🚀 KÍCH HOẠT HỆ THỐNG", use_container_width=True):
             if name:
                 st.session_state.user = name
                 st.session_state.logged = True
                 st.rerun()
+            else:
+                st.warning("Vui lòng nhập tên để tiếp tục!")
 
+# --- 6. GIAO DIỆN CHÍNH (SAU KHI ĐĂNG NHẬP) ---
 else:
-    # --- GIAO DIỆN CHAT AI ---
+    # Sidebar
     with st.sidebar:
-        st.markdown('<div style="text-align: center;">', unsafe_allow_html=True)
-        st.markdown('<div class="robot-box"><img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="110"></div>', unsafe_allow_html=True)
+        st.markdown(f'''
+            <div class="sidebar-content">
+                <div class="robot-container">
+                    <img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="80">
+                </div>
+                <h3 style="color:white; margin-bottom:0;">{st.session_state.user}</h3>
+                <p style="color:#00d4ff; font-size:0.8rem;">Cán bộ đang truy cập</p>
+            </div>
+            <hr style="opacity:0.2; margin:10px 0;">
+        ''', unsafe_allow_html=True)
+
+        st.markdown("<p style='color:white; font-size:0.7rem; opacity:0.6; margin-left:10px;'>NHIỆM VỤ NHANH</p>", unsafe_allow_html=True)
         
-        st.markdown(f"<p class='sidebar-text'>Cán bộ truy cập:<br><b style='font-size:1.1rem; color:#00d4ff;'>{st.session_state.user}</b></p>", unsafe_allow_html=True)
-        st.markdown("<hr style='border-color: rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
-        
-        # --- MỤC ĐỀ XUẤT TÌM KIẾM (MỚI) ---
-        st.markdown("<p class='sidebar-text' style='font-size:0.8rem; opacity:0.7;'>ĐỀ XUẤT NHANH:</p>", unsafe_allow_html=True)
-        
-        if st.button("📩 Phản ánh kiến nghị"):
-            st.session_state.messages.append({"role": "user", "content": "Tôi muốn phản ánh kiến nghị"})
-            st.rerun()
-            
-        if st.button("🆘 Yêu cầu hỗ trợ"):
-            st.session_state.messages.append({"role": "user", "content": "Tôi cần hỗ trợ kỹ thuật"})
-            st.rerun()
-            
-        if st.button("📝 Đăng ký Công đoàn"):
-            st.session_state.messages.append({"role": "user", "content": "Hướng dẫn đăng ký tham gia công đoàn"})
-            st.rerun()
-            
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # Nút xóa phiên
-        st.markdown('<div class="delete-btn">', unsafe_allow_html=True)
-        if st.button("🗑️ XÓA DỮ LIỆU PHIÊN"):
+        suggestions = {
+            "📩 Phản ánh kiến nghị": "Tôi muốn gửi một phản ánh kiến nghị công việc.",
+            "🆘 Yêu cầu hỗ trợ": "Hướng dẫn tôi cách yêu cầu hỗ trợ kỹ thuật.",
+            "📝 Đăng ký Công đoàn": "Cho tôi hỏi thủ tục đăng ký tham gia công đoàn.",
+            "📜 Quy định chính sách": "Các chính sách mới nhất cho công đoàn viên là gì?"
+        }
+
+        for label, prompt_text in suggestions.items():
+            if st.button(label):
+                add_message("user", prompt_text)
+                # Gán cờ để gọi AI ngay sau rerun
+                st.session_state.run_ai = True 
+                st.rerun()
+
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        if st.button("🗑️ Làm mới phiên chat"):
             st.session_state.messages = []
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown(f'''
+            <div style="position: fixed; bottom: 20px; left: 20px; color: rgba(255,255,255,0.4); font-size: 0.7rem;">
+                Phát triển bởi: <b>Lương Tấn Phát</b><br>
+                Hòa Khánh Digital Project © 2024
+            </div>
+        ''', unsafe_allow_html=True)
+
+    # Khung chat chính
+    st.markdown(f"### <span class='gradient-text'>Xin chào {st.session_state.user}!</span>", unsafe_allow_html=True)
+    st.write("Tôi có thể giúp gì cho Anh/Chị trong công tác Công đoàn hôm nay?")
+
+    # Hiển thị lịch sử chat
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    # Xử lý Input từ người dùng
+    if prompt := st.chat_input("Nhập câu hỏi tại đây..."):
+        add_message("user", prompt)
+        with st.chat_message("user"):
+            st.markdown(prompt)
         
-        st.markdown(f'''<div style="margin-top:50px; opacity:0.8;"><i class="fas fa-code" style="color:white;"></i><p class='sidebar-text' style='font-size:0.7rem;'>Tác giả: <b>Lương Tấn Phát</b><br>Dự án Chuyển đổi số</p></div>''', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # Khung Chat chính
-    st.markdown(f"<h4 style='color:#004494;'>Chào {st.session_state.user}, Trợ lý AI sẵn sàng!</h4>", unsafe_allow_html=True)
-
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]): st.markdown(msg["content"])
-
-    # Xử lý nhập liệu hoặc từ nút bấm đề xuất
-    if prompt := st.chat_input("Nhập câu hỏi..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        st.rerun()
-
-    # Tự động phản hồi AI khi có tin nhắn mới từ User
-    if len(st.session_state.messages) > 0 and st.session_state.messages[-1]["role"] == "user":
+        # Gọi AI
         with st.chat_message("assistant"):
+            message_placeholder = st.empty()
+            full_response = ""
+            
             try:
-                user_msg = st.session_state.messages[-1]["content"]
-                res = client.chat.completions.create(
-                    messages=[{"role": "system", "content": f"Bạn là trợ lý AI công đoàn xã Hòa Khánh. Gọi người dùng là Anh/Chị {st.session_state.user}."},
-                              {"role": "user", "content": user_msg}],
-                    model="llama-3.1-8b-instant")
-                ans = res.choices[0].message.content
-                st.markdown(ans)
-                st.session_state.messages.append({"role": "assistant", "content": ans})
-            except: st.error("Lỗi kết nối!")
+                # Tạo hiệu ứng streaming (chạy chữ)
+                completion = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=[
+                        {"role": "system", "content": f"Bạn là trợ lý AI công đoàn xã Hòa Khánh. Hãy trả lời chuyên nghiệp, thân thiện. Gọi người dùng là Anh/Chị {st.session_state.user}."},
+                        *[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
+                    ],
+                    stream=True,
+                )
+                
+                for chunk in completion:
+                    if chunk.choices[0].delta.content is not None:
+                        full_response += chunk.choices[0].delta.content
+                        message_placeholder.markdown(full_response + "▌")
+                
+                message_placeholder.markdown(full_response)
+                add_message("assistant", full_response)
+                
+            except Exception as e:
+                st.error(f"Hệ thống đang bận, vui lòng thử lại sau! (Lỗi: {str(e)})")
