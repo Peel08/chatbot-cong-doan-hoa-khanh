@@ -71,7 +71,7 @@ if "logged" not in st.session_state: st.session_state.logged = False
 AUTHOR_INFO = """
 Thông tin tác giả hệ thống:
 - Họ tên: Lương Tấn Phát
-- Đơn vị: Công đoàn cơ sở / Youth Union xã Hòa Khánh.
+- Đơn vị: Công đoàn / Youth Union xã Hòa Khánh.
 - Dự án: Hòa Khánh Digital AI - Số hóa công tác Công đoàn & Thanh niên.
 - Năm phát triển: 2026.
 - Vai trò: Nhà phát triển hệ thống và thiết kế trải nghiệm người dùng (Developer & UI/UX Designer).
