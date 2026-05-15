@@ -9,7 +9,13 @@ st.set_page_config(
     page_icon="🤖", 
     layout="wide"
 )
-
+# --- 2. CẤU HÌNH LOGO CHO MÀN HÌNH CHÍNH ĐIỆN THOẠI (iOS/Android) ---
+st.markdown(f'''
+    <head>
+        <link rel="apple-touch-icon" href="logo.png">
+        <link rel="icon" sizes="192x192" href="logo.png">
+    </head>
+''', unsafe_allow_html=True)
 # --- 2. URL GOOGLE SCRIPT ---
 WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzsJ36a3v3noZ3cg6qOV55hII63cxGnFvKwLGhbN48uHFqIE8-be9suukzihFRpl_Kzeg/exec"
 
