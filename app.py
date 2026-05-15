@@ -95,23 +95,44 @@ if "messages" not in st.session_state: st.session_state.messages = []
 if "logged" not in st.session_state: st.session_state.logged = False
 if "form_type" not in st.session_state: st.session_state.form_type = None
 
+# Mẫu đơn từ file word anh Phát cung cấp
 MAU_DON_TEXT = """CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
 Độc lập - Tự do - Hạnh phúc
 ---------------
 ĐƠN GIA NHẬP CÔNG ĐOÀN
-... (Nội dung mẫu đơn của anh) ...
+
+Kính gửi: Ban Chấp hành Công đoàn cơ sở xã Hòa Khánh.
+
+- Tên tôi là: .................................................. ; Nam/nữ :…..……...
+- Sinh ngày: ………………………………. ; Dân tộc: …………..
+- Quê quán: ……………………………………………………….
+- Nơi ở hiện nay: ………………………………………………….
+- Số CCCD: ………………………Số điện thoại: ……………….
+- Nơi làm việc hiện nay: .....................................................
+- Vị trí công việc đang làm: .................................................
+
+Sau khi tìm hiểu Điều lệ Công đoàn Việt Nam, tôi tán thành và tự nguyện làm đơn gia nhập tổ chức Công đoàn Việt Nam.
+Tôi xin hứa: Thực hiện tốt nhiệm vụ, quyền hạn của đoàn viên; chấp hành sự phân công của tổ chức, đóng đoàn phí đầy đủ.
+
+Hòa Khánh, ngày 11 tháng 03 năm 2026
+Người làm đơn (Ký, ghi rõ họ tên)
 """
 
 CHU_TICH_INFO = """
-Thông tin về Chủ tịch Công đoàn cơ sở xã Hòa Khánh:
+Thông tin Chủ tịch Công đoàn xã Hòa Khánh:
 - Họ và tên: Nguyễn Thanh Toàn
-... (Thông tin chủ tịch của anh) ...
+- Chức vụ: Chủ tịch Công đoàn cơ sở xã Hòa Khánh.
+- SĐT: 0797627616 | Email: thanhtoan26091992@gmail.com
+- Địa chỉ: số 779, Quốc lộ N2, xã Hòa Khánh, tỉnh Tây Ninh.
 """
 
-AUTHOR_INFO = """
-Hệ thống Hòa Khánh Digital AI được thiết kế, xây dựng và phát triển hoàn toàn bởi Lương Tấn Phát. 
-... (Thông tin tác giả của anh) ...
-"""
+AUTHOR_FOOTER_HTML = f'''
+    <div class="author-footer">
+        Hệ thống Hòa Khánh Digital AI System © 2026<br>
+        Thiết kế & Phát triển: <b>Lương Tấn Phát</b><br>
+        <span style="font-size: 0.8rem;">Giải pháp số hóa nghiệp vụ Công đoàn cơ sở</span>
+    </div>
+'''
 
 def add_message(role, content):
     st.session_state.messages.append({"role": role, "content": content})
