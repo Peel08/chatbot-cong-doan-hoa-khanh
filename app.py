@@ -196,15 +196,57 @@ else:
 
     st.markdown("---")
 
+# --- 6.1 FORM TIẾP NHẬN PHẢN ÁNH KIẾN NGHỊ ---
     if st.session_state.form_type == "phan_anh":
-        with st.form("form_phan_anh"):
-            phone = st.text_input("📞 Số điện thoại:")
-            content = st.text_area("📝 Nội dung:")
-            if st.form_submit_button("🚀 GỬI"):
-                requests.post(WEBHOOK_URL, json={"user": st.session_state.user, "phone": phone, "content": content, "type": "Phản ánh"})
-                add_message("assistant", "✅ Đã gửi phản ánh thành công!")
-                st.session_state.form_type = None
-                st.rerun()
+        st.markdown('<div class="report-box">', unsafe_allow_html=True)
+        st.markdown("<b style='color:#0047AB;'>🏛️ TIẾP NHẬN PHẢN ÁNH KIẾN NGHỊ</b>", unsafe_allow_html=True)
+        with st.form("form_phan_anh", clear_on_submit=True):
+            phone_input = st.text_input("📞 Số điện thoại liên hệ:", placeholder="Nhập số điện thoại...")
+            content_input = st.text_area("📝 Nội dung phản ánh kiến nghị:", placeholder="Nhập chi tiết ý kiến muốn gửi lên Ban chấp hành...")
+            submit_button = st.form_submit_button("🚀 GỬI BÁO CÁO PHẢN ÁNH")
+            
+            if submit_button:
+                if not phone_input or not content_input:
+                    st.error("⚠️ Vui lòng điền đầy đủ thông tin yêu cầu!")
+                else:
+                    with st.status("🚀 Đang chuyển dữ liệu về trang quản trị..."):
+                        try:
+                            requests.post(WEBHOOK_URL, json={
+                                "user": st.session_state.user, "phone": phone_input, "content": content_input, "type": "Phản ánh kiến nghị"
+                            })
+                            res_text = f"✅ Đã ghi nhận thành công! Ý kiến phản ánh của Anh/Chị {st.session_state.user} (SĐT: {phone_input}) đã được chuyển thẳng tới Chủ tịch Công đoàn xã. (Phát triển bởi Lương Tấn Phát)"
+                        except:
+                            res_text = "❌ Gửi thất bại. Anh Phát kiểm tra lại link Web App URL."
+                    add_message("assistant", res_text)
+                    st.session_state.form_type = None
+                    st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # --- 6.2 FORM TIẾP NHẬN HỖ TRỢ KHÓ KHĂN ---
+    if st.session_state.form_type == "ho_tro":
+        st.markdown('<div class="danger-box">', unsafe_allow_html=True)
+        st.markdown("<b style='color:#e53e3e;'>🆘 KHẢO SÁT TIẾP NHẬN ĐOÀN VIÊN CÓ HOÀN CẢNH KHÓ KHĂN</b>", unsafe_allow_html=True)
+        with st.form("form_ho_tro_kho_khan", clear_on_submit=True):
+            phone_input = st.text_input("📞 Số điện thoại người cần hỗ trợ:", placeholder="Nhập số điện thoại...")
+            content_input = st.text_area("🏥 Trình bày hoàn cảnh khó khăn đề xuất hỗ trợ:", placeholder="Ví dụ: Đoàn viên bị tai nạn, đau ốm nằm viện, gia đình gặp sự cố...")
+            submit_button = st.form_submit_button("🚨 GỬI YÊU CẦU CỨU TRỢ KHẨN CẤP")
+            
+            if submit_button:
+                if not phone_input or not content_input:
+                    st.error("⚠️ Vui lòng cung cấp số điện thoại và mô tả rõ hoàn cảnh khó khăn!")
+                else:
+                    with st.status("🚨 Hệ thống đang truyền phát thông tin khẩn cấp..."):
+                        try:
+                            requests.post(WEBHOOK_URL, json={
+                                "user": st.session_state.user, "phone": phone_input, "content": content_input, "type": "Hỗ trợ khó khăn"
+                            })
+                            res_text = f"🚨 YÊU CẦU KHẨN CẤP ĐÃ GỬI ĐI! Thông tin khó khăn của Anh/Chị {st.session_state.user} (SĐT: {phone_input}) đã được chuyển tới Ban Thường vụ và Chủ tịch Công đoàn xã Hòa Khánh để lập phương án thăm hỏi, hỗ trợ sớm nhất. (Phát triển bởi Lương Tấn Phát)"
+                        except:
+                            res_text = "❌ Lỗi hệ thống kết nối. Anh Phát vui lòng cấu hình lại Web App."
+                    add_message("assistant", res_text)
+                    st.session_state.form_type = None
+                    st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
