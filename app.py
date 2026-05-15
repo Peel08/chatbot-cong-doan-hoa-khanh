@@ -128,7 +128,7 @@ Thông tin Chủ tịch Công đoàn xã Hòa Khánh:
 
 AUTHOR_FOOTER_HTML = f'''
     <div class="author-footer">
-        Hệ thống Hòa Khánh Digital AI System © 2026<br>
+        Hệ thống Công Đoàn số Xã Hòa Khánh - Tây Ninh © 2026<br>
         Thiết kế & Phát triển: <b>Lương Tấn Phát</b><br>
         <span style="font-size: 0.8rem;">Giải pháp số hóa nghiệp vụ Công đoàn cơ sở</span>
     </div>
@@ -159,13 +159,13 @@ if not st.session_state.logged:
         st.markdown(f'''
             <div class="author-footer">
                 Thiết kế & Phát triển: <b>Lương Tấn Phát</b><br>
-                Hòa Khánh Digital AI System © 2026
+                Công Đoàn số Xã Hòa Khánh - Tây  © 2026
             </div>
         ''', unsafe_allow_html=True)
 
 # --- 6. GIAO DIỆN CHÍNH ---
 else:
-    st.markdown(f"### <span class='gradient-text'>Xin chào {st.session_state.user}!</span>", unsafe_allow_html=True)
+    st.markdown(f"### <span class='gradient-text'>Xin chào {st.session_state.user}! Tôi là trợ lý ảo Công đoàn xã Hòa Khánh, tôi có thể giúp gì cho anh/ chị</span>", unsafe_allow_html=True)
     
     col_1, col_2 = st.columns(2)
     with col_1:
