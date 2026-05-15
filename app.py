@@ -9,6 +9,7 @@ st.set_page_config(
     page_icon="🤖", 
     layout="wide"
 )
+
 # --- 2. CẤU HÌNH LOGO CHO MÀN HÌNH CHÍNH ĐIỆN THOẠI (iOS/Android) ---
 st.markdown(f'''
     <head>
@@ -16,6 +17,7 @@ st.markdown(f'''
         <link rel="icon" sizes="192x192" href="logo.png">
     </head>
 ''', unsafe_allow_html=True)
+
 # --- 2. URL GOOGLE SCRIPT ---
 WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzsJ36a3v3noZ3cg6qOV55hII63cxGnFvKwLGhbN48uHFqIE8-be9suukzihFRpl_Kzeg/exec"
 
@@ -26,7 +28,6 @@ st.markdown('''
         background: radial-gradient(circle at 50% 50%, #fdfbfb 0%, #ebedee 100%);
     }
 
-    /* FIX NÚT BẤM VÀ DOWNLOAD: Chữ trắng sáng loáng */
     div.stButton > button, div.stDownloadButton > button {
         background: linear-gradient(90deg, #0047AB 0%, #0072ff 100%) !important;
         color: white !important;
@@ -94,43 +95,22 @@ if "messages" not in st.session_state: st.session_state.messages = []
 if "logged" not in st.session_state: st.session_state.logged = False
 if "form_type" not in st.session_state: st.session_state.form_type = None
 
-# NỘI DUNG MẪU ĐƠN 5A DÀNH CHO CÁ NHÂN
 MAU_DON_TEXT = """CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
 Độc lập - Tự do - Hạnh phúc
 ---------------
 ĐƠN GIA NHẬP CÔNG ĐOÀN
-
-Kính gửi: Ban Chấp hành Công đoàn cơ sở xã Hòa Khánh.
-
-- Tên tôi là: .................................................. ; Nam/nữ :…..……...
-- Sinh ngày: ………………………………. ; Dân tộc: …………..
-- Quê quán: ……………………………………………………….
-- Nơi ở hiện nay: ………………………………………………….
-- Số CCCD: ………………………Số điện thoại: ……………….
-- Nơi làm việc hiện nay: .....................................................
-- Vị trí công việc đang làm: .................................................
-
-Sau khi tìm hiểu Điều lệ Công đoàn Việt Nam, tôi tán thành và tự nguyện làm đơn gia nhập tổ chức Công đoàn Việt Nam.
-Khi là đoàn viên của Công đoàn Việt Nam, tôi xin hứa: Thực hiện tốt nhiệm vụ, quyền hạn của đoàn viên; chấp hành sự phân công của tổ chức, các quy định của Điều lệ Công đoàn Việt Nam, chủ trương, nghị quyết của tổ chức công đoàn, đóng đoàn phí đầy đủ.
-
-Hòa Khánh, ngày 11 tháng 03 năm 2026
-Người làm đơn
-(Ký, ghi rõ họ tên)
+... (Nội dung mẫu đơn của anh) ...
 """
 
 CHU_TICH_INFO = """
 Thông tin về Chủ tịch Công đoàn cơ sở xã Hòa Khánh:
 - Họ và tên: Nguyễn Thanh Toàn
-- Chức vụ: Phó Chủ tịch Ủy ban MTTQ xã đồng thời Chủ tịch Công đoàn cơ sở xã Hòa Khánh.
-- Địa điểm làm việc: số 779, Quốc lộ N2, xã Hòa Khánh, tỉnh Tây Ninh - UBND xã Hòa Khánh.
-- Số điện thoại liên hệ: 0797627616
-- Email: thanhtoan26091992@gmail.com
-- Nhiệm vụ: Chịu trách nhiệm chỉ đạo điều hành toàn bộ hoạt động bảo vệ quyền, lợi ích hợp pháp chính đáng của đoàn viên và người lao động trên địa bàn xã.
+... (Thông tin chủ tịch của anh) ...
 """
 
 AUTHOR_INFO = """
 Hệ thống Hòa Khánh Digital AI được thiết kế, xây dựng và phát triển hoàn toàn bởi Lương Tấn Phát. 
-Đây là giải pháp công nghệ số hóa tiên phong nhằm phục vụ công tác điều hành, quản lý nghiệp vụ Công đoàn và phong trào Thanh niên tại cơ sở xã Hòa Khánh vào năm 2026.
+... (Thông tin tác giả của anh) ...
 """
 
 def add_message(role, content):
@@ -143,9 +123,9 @@ if not st.session_state.logged:
     with col2:
         st.markdown(f'''
             <div style="text-align:center;">
-                <img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khanh/main/robot.png" width="160">
+                <img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khánh/main/robot.png" width="160">
             </div>
-<h2 style="text-align:center; color:#004494; font-weight:800; margin-top:12px;">TRỢ LÝ ẢO CÔNG ĐOÀN XÃ HÒA KHÁNH</h2>
+            <h2 style="text-align:center; color:#004494; font-weight:800; margin-top:12px;">TRỢ LÝ ẢO CÔNG ĐOÀN XÃ HÒA KHÁNH</h2>
         ''', unsafe_allow_html=True)
         name = st.text_input("👤 Định danh:", key="login_name")
         if st.button("🚀 KÍCH HOẠT HỆ THỐNG"):
@@ -153,6 +133,14 @@ if not st.session_state.logged:
                 st.session_state.user = name
                 st.session_state.logged = True
                 st.rerun()
+        
+        # CHÈN THÊM THÔNG TIN TÁC GIẢ Ở ĐÂY NHƯ ANH YÊU CẦU
+        st.markdown(f'''
+            <div class="author-footer">
+                Thiết kế & Phát triển: <b>Lương Tấn Phát</b><br>
+                Hòa Khánh Digital AI System © 2026
+            </div>
+        ''', unsafe_allow_html=True)
 
 # --- 6. GIAO DIỆN CHÍNH ---
 else:
@@ -163,14 +151,11 @@ else:
         if st.button("📩 GỬI PHẢN ÁNH"):
             st.session_state.form_type = "phan_anh"
             st.rerun()
-        
-        # NÚT ĐĂNG KÝ VỚI TÍNH NĂNG TẢI FILE
         st.download_button(
             label="📝 TẢI MẪU ĐƠN ĐĂNG KÝ",
             data=MAU_DON_TEXT,
             file_name="Don_Gia_Nhap_Cong_Doan_Hoa_Khanh.txt",
-            mime="text/plain",
-            help="Tải mẫu đơn cá nhân chuẩn (Mẫu 5a)"
+            mime="text/plain"
         )
             
     with col_2:
@@ -184,7 +169,6 @@ else:
 
     st.markdown("---")
 
-    # --- PHẦN FORM ---
     if st.session_state.form_type == "phan_anh":
         with st.form("form_phan_anh"):
             phone = st.text_input("📞 Số điện thoại:")
@@ -195,7 +179,6 @@ else:
                 st.session_state.form_type = None
                 st.rerun()
 
-    # --- LỊCH SỬ CHAT ---
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
@@ -204,21 +187,17 @@ else:
         add_message("user", prompt)
         st.rerun()
 
-    # --- XỬ LÝ HỎI ĐÁP AI TỰ ĐỘNG ---
     if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
         with st.chat_message("assistant"):
             placeholder = st.empty()
             full_res = ""
-            
-            # Điều chỉnh chỉ dẫn để AI thông minh hơn, không nhắc thừa
             system_instruction = (
                 f"Bạn là trợ lý ảo chuyên nghiệp của Công đoàn xã Hòa Khánh. "
                 f"Tác giả hệ thống: Lương Tấn Phát. Chủ tịch: Nguyễn Thanh Toàn. "
-f"Chỉ cung cấp chi tiết mẫu đơn khi người dùng hỏi về 'đăng ký', 'mẫu đơn' hoặc 'gia nhập'. "
+                f"Chỉ cung cấp chi tiết mẫu đơn khi người dùng hỏi về 'đăng ký', 'mẫu đơn' hoặc 'gia nhập'. "
                 f"Các câu hỏi khác hãy trả lời ngắn gọn, thân thiện và đi thẳng vào vấn đề. "
                 f"Người đang trò chuyện với bạn là Anh/Chị {st.session_state.user}."
             )
-
             completion = client.chat.completions.create(
                 model="llama-3.1-8b-instant",
                 messages=[
