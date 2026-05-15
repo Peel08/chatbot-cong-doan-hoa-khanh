@@ -165,6 +165,12 @@ if not st.session_state.logged:
 
 # --- 6. GIAO DIỆN CHÍNH ---
 else:
+    # CHÈN VÀO ĐÂY (Dòng 126) ĐỂ HIỆN LẠI CON ROBOT
+    st.markdown(f'''
+        <div style="text-align:center;">
+            <img src="https://raw.githubusercontent.com/peel08/chatbot-cong-doan-hoa-khánh/main/robot.png" width="80">
+        </div>
+    ''', unsafe_allow_html=True)
     st.markdown(f"### <span class='gradient-text'>Xin chào {st.session_state.user}! Tôi là trợ lý ảo Công đoàn xã Hòa Khánh, tôi có thể giúp gì cho anh/ chị</span>", unsafe_allow_html=True)
     
     col_1, col_2 = st.columns(2)
